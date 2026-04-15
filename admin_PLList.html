@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Price List Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: #1f4e79;
+            color: #fff;
+            padding: 14px 20px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .page {
+            max-width: 1400px;
+            margin: 18px auto 32px;
+            padding: 0 16px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #111827;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn.primary {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+
+        .btn.gray {
+            background: #475569;
+            color: #fff;
+            border-color: #475569;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #dbe3ef;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+
+        .card-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 700;
+            background: #f8fafc;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 12px;
+        }
+
+        .col-1 {
+            grid-column: span 1;
+        }
+
+        .col-2 {
+            grid-column: span 2;
+        }
+
+        .col-3 {
+            grid-column: span 3;
+        }
+
+        .col-4 {
+            grid-column: span 4;
+        }
+
+        .col-6 {
+            grid-column: span 6;
+        }
+
+        .col-12 {
+            grid-column: span 12;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 9px 10px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status.draft {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.inactive {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            background: #eef2ff;
+            color: #4338ca;
+        }
+
+        .info-box {
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            margin-bottom: 14px;
+            background: #eff6ff;
+            border: 1px solid #93c5fd;
+            color: #1d4ed8;
+        }
+
+        .table-wrap {
+            overflow: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1250px;
+        }
+
+        th,
+        td {
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            font-size: 13px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f8fafc;
+            white-space: nowrap;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .small {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 980px) {
+            .grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+
+            .col-1,
+            .col-2,
+            .col-3,
+            .col-4,
+            .col-6,
+            .col-12 {
+                grid-column: span 1;
+            }
+        }
+
+        /* Fix Bootstrap collision for custom grid */
+        .grid [class*="col-"],
+        .grid [class^="col-"] {
+            width: auto !important;
+            flex: none !important;
+            max-width: none !important;
+            padding: 0 !important;
+        }
+    </style>
+</head>
+
+<body style="background: #f4f6f9;">
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="admin_dashboard.html">
+                <i class="bi bi-shield-lock-fill me-2"></i>Dolfin Admin
+            </a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Platform Management</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">Admin</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="index.html">Switch Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 fw-bold text-success"><i class="bi bi-tag-fill me-2"></i>Price List Management</h4>
+                </div>
+                <!-- Content injected here -->
+                <div class="page" style="max-width: 100%; margin: 0; background: transparent; padding: 0;">
+                    <div class="toolbar">
+                        <button class="btn primary" onclick="window.location.href='admin_PLadd.html'">+ Add New Price
+                            List</button>
+                        <button class="btn">Export Excel</button>
+                        <button class="btn gray">Back</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Filter</div>
+                        <div class="card-body">
+                            <div class="info-box">
+                                Price List dengan status <strong>Active</strong> tidak boleh diedit. Period untuk target
+                                yang sama
+                                tidak boleh overlap. Jika tidak ada period yang match, maka harga saat billing akan
+                                kosong.
+                            </div>
+
+                            <div class="grid">
+                                <!-- Row 1 -->
+                                <div class="field col-2">
+                                    <label>Price List No</label>
+                                    <input id="fNo" type="text" placeholder="Search no" />
+                                </div>
+                                <div class="field col-3">
+                                    <label>Price List Name</label>
+                                    <input id="fName" type="text" placeholder="Search name" />
+                                </div>
+                                <div class="field col-2">
+                                    <label>Toko</label>
+                                    <select id="fToko">
+                                        <option value="">All</option>
+                                    </select>
+                                </div>
+                                <div class="field col-2">
+                                    <label>PT</label>
+                                    <select id="fPT">
+                                        <option value="">All</option>
+                                        <option>PT Sunrise Jaya</option>
+                                        <option>PT Maju Bersama</option>
+                                        <option>PT Jaya Abadi</option>
+                                    </select>
+                                </div>
+                                <div class="field col-3">
+                                    <label>Konsep</label>
+                                    <select id="fKonsep">
+                                        <option value="">All</option>
+                                        <option>General Bakery</option>
+                                        <option>Rakuni</option>
+                                        <option>Eaton</option>
+                                        <option>Ah Mei</option>
+                                    </select>
+                                </div>
+
+                                <!-- Row 2 -->
+                                <div class="field col-2">
+                                    <label>Status</label>
+                                    <select id="fStatus">
+                                        <option value="">All</option>
+                                        <option>Draft</option>
+                                        <option>Active</option>
+                                        <option>Inactive</option>
+                                    </select>
+                                </div>
+                                <div class="field col-2">
+                                    <label>Currency</label>
+                                    <select id="fCurrency">
+                                        <option value="">All</option>
+                                        <option>IDR</option>
+                                        <option>USD</option>
+                                    </select>
+                                </div>
+                                <div class="field col-2">
+                                    <label>Valid From</label>
+                                    <input id="fValidFrom" type="date" />
+                                </div>
+                                <div class="field col-2">
+                                    <label>Valid To</label>
+                                    <input id="fValidTo" type="date" />
+                                </div>
+                                <div class="field col-4"
+                                    style="display:flex; gap:10px; justify-content:flex-end; align-items:end;">
+                                    <button class="btn" id="btnReset">Reset</button>
+                                    <button class="btn primary" id="btnSearch">Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Price List</div>
+                        <div class="card-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Price List No</th>
+                                            <th>Price List Name</th>
+                                            <th>Price Type</th>
+                                            <th>Target</th>
+                                            <th>Currency</th>
+                                            <th>Valid From</th>
+                                            <th>Valid To</th>
+                                            <th class="right">Total Item</th>
+                                            <th>Status</th>
+                                            <th>Created By</th>
+                                            <th>Last Updated</th>
+                                            <th>Notes</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="plTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="billing_storage.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = new SidebarSystem("admin", "PriceList");
+            sidebar.render();
+
+            const sess = localStorage.getItem("dolfin_user");
+            if (sess) {
+                const user = JSON.parse(sess);
+                const ub = document.getElementById("userBtn");
+                if (ub) ub.textContent = user.name || "Admin";
+                const ui = document.getElementById("userInfo");
+                if (ui) ui.textContent = `${user.email} • role=${user.role}`;
+            }
+
+            document.getElementById("btnLogout")?.addEventListener("click", () => {
+                localStorage.removeItem("dolfin_user");
+                window.location.href = "index.html";
+            });
+
+            // ── Populate Toko filter from billing customers ───────────────
+            const fToko = document.getElementById("fToko");
+            const tokoList = (typeof BillingStorage !== "undefined") ? BillingStorage.getCustomerList() : [];
+            tokoList.forEach(name => {
+                const opt = document.createElement("option");
+                opt.value = name; opt.textContent = name;
+                fToko.appendChild(opt);
+            });
+
+            // ── Helpers ───────────────────────────────────────────────────
+            const LS_PL = "dolfin_pl_list";
+            const getPLList = () => JSON.parse(localStorage.getItem(LS_PL) || "[]");
+
+            const priceType = (pl) => {
+                if (pl.toko)   return { label: "Store",   cls: "badge" };
+                if (pl.pt)     return { label: "PT",      cls: "badge" };
+                if (pl.konsep) return { label: "Concept", cls: "badge" };
+                return           { label: "General",  cls: "badge" };
+            };
+
+            const target = (pl) => pl.toko || pl.pt || pl.konsep || "All Customer";
+
+            const statusBadge = (s) => {
+                const cls = s === "Active" ? "active" : s === "Draft" ? "draft" : "inactive";
+                return `<span class="status ${cls}">${s}</span>`;
+            };
+
+            const fmtDt = (iso) => {
+                if (!iso) return "-";
+                const d = new Date(iso);
+                return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+            };
+
+            // ── Render ────────────────────────────────────────────────────
+            const tbody = document.getElementById("plTableBody");
+
+            const render = (list) => {
+                if (!list.length) {
+                    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:#64748b;">Tidak ada data Price List.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = list.map(pl => {
+                    const pt = priceType(pl);
+                    const isActive = pl.status === "Active";
+                    const actions = isActive
+                        ? `<button class="btn" onclick="window.location.href='admin_PLView.html?plNo=${pl.plNo}'">View</button>`
+                        : `<button class="btn" onclick="window.location.href='admin_PLView.html?plNo=${pl.plNo}'">View</button>
+                           <button class="btn" onclick="window.location.href='admin_PLadd.html?plNo=${pl.plNo}'">Edit</button>`;
+                    return `<tr>
+                        <td>${pl.plNo}</td>
+                        <td>${pl.plName}</td>
+                        <td><span class="${pt.cls}">${pt.label}</span></td>
+                        <td>${target(pl)}</td>
+                        <td>${pl.currency || "IDR"}</td>
+                        <td>${pl.validFrom || "-"}</td>
+                        <td>${pl.validTo || "-"}</td>
+                        <td class="right">${(pl.items || []).length}</td>
+                        <td>${statusBadge(pl.status)}</td>
+                        <td>${pl.createdBy || "-"}</td>
+                        <td>${pl.updatedAt ? fmtDt(pl.updatedAt) : "-"}</td>
+                        <td class="small">${pl.remarks || ""}</td>
+                        <td><div class="actions">${actions}</div></td>
+                    </tr>`;
+                }).join("");
+            };
+
+            // ── Search / Reset ─────────────────────────────────────────────
+            const applyFilter = () => {
+                const no       = document.getElementById("fNo").value.trim().toLowerCase();
+                const name     = document.getElementById("fName").value.trim().toLowerCase();
+                const toko     = document.getElementById("fToko").value;
+                const pt       = document.getElementById("fPT").value;
+                const konsep   = document.getElementById("fKonsep").value;
+                const status   = document.getElementById("fStatus").value;
+                const currency = document.getElementById("fCurrency").value;
+                const from     = document.getElementById("fValidFrom").value;
+                const to       = document.getElementById("fValidTo").value;
+
+                const list = getPLList().filter(pl => {
+                    if (no     && !pl.plNo.toLowerCase().includes(no))     return false;
+                    if (name   && !pl.plName.toLowerCase().includes(name)) return false;
+                    if (toko   && pl.toko   !== toko)   return false;
+                    if (pt     && pl.pt     !== pt)     return false;
+                    if (konsep && pl.konsep !== konsep) return false;
+                    if (status && pl.status !== status) return false;
+                    if (currency && pl.currency !== currency) return false;
+                    if (from && pl.validTo   && pl.validTo   < from) return false;
+                    if (to   && pl.validFrom && pl.validFrom > to)   return false;
+                    return true;
+                });
+                render(list);
+            };
+
+            document.getElementById("btnSearch").addEventListener("click", applyFilter);
+
+            document.getElementById("btnReset").addEventListener("click", () => {
+                ["fNo","fName","fValidFrom","fValidTo"].forEach(id => document.getElementById(id).value = "");
+                ["fToko","fPT","fKonsep","fStatus","fCurrency"].forEach(id => document.getElementById(id).value = "");
+                applyFilter();
+            });
+
+            // Initial render
+            applyFilter();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manage Order — Dolfin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .card {
+            border: 0;
+            border-radius: 8px;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+
+        .evidence-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success sticky-top">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <span class="text-white small me-2" id="userInfo">User</span>
+                <a class="btn btn-sm btn-outline-light" href="distributor_orders.html">Back to Orders</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Manage Order <span class="mono text-primary" id="txtOrderNo">...</span></h4>
+                <div class="text-muted" id="txtRetailName">Retailer: Loading...</div>
+            </div>
+            <div id="statusBadge"></div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- LEFT COLUMN: Order Content -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <div class="fw-bold">Order Items</div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light small">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyItems"></tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Total</td>
+                                        <td class="text-end fw-bold" id="txtTotal">-</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. ORDER INTAKE ACTION -->
+                <div class="card shadow-sm border-primary mb-4" id="cardActionIntake" style="display:none">
+                    <div class="card-body">
+                        <div class="section-title text-primary">1. Order Intake</div>
+                        <p class="small text-muted mb-3">Please review the order items above. Confirm if stock is
+                            available.</p>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="updateStatus('Dikonfirmasi')">
+                                <i class="bi bi-check-lg me-1"></i>Confirm Order
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="updateStatus('Ditolak')">
+                                <i class="bi bi-x-lg me-1"></i>Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. DELIVERY HANDLING -->
+                <div class="card shadow-sm mb-4" id="cardDelivery">
+                    <div class="card-body">
+                        <div class="section-title">2. Delivery Fulfillment</div>
+
+                        <div id="deliveryForm" style="display:none">
+                            <div class="alert alert-light border small text-muted">
+                                Order confirmed. Ready to issue delivery order (DO).
+                            </div>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-bold">DO Number (Auto)</label>
+                                    <input type="text" class="form-control form-control-sm bg-light" id="inpDoNo"
+                                        readonly>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Est. Delivery Date</label>
+                                    <input type="date" class="form-control form-control-sm" id="inpDoDate">
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-primary btn-sm w-100" onclick="issueDO()">Issue DO</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="deliveryTracking" style="display:none">
+                            <div class="p-3 bg-light rounded border mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="mono fw-bold" id="viewDoNo">-</span>
+                                    <span class="badge bg-secondary" id="viewDoStatus">-</span>
+                                </div>
+                                <div class="small text-muted">Est. Date: <span id="viewDoDate">-</span></div>
+                            </div>
+
+                            <div class="d-flex gap-2" id="deliveryActions">
+                                <button class="btn btn-outline-warning text-dark btn-sm" onclick="btnShip()">
+                                    <i class="bi bi-truck me-1"></i>Mark Shipped
+                                </button>
+                                <button class="btn btn-success btn-sm" onclick="btnDeliver()">
+                                    <i class="bi bi-box-seam me-1"></i>Mark Delivered
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="deliveryLocked" class="text-muted small fst-italic mt-2" style="display:none">
+                            Waiting for order confirmation...
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: FINANCE -->
+            <div class="col-lg-5">
+
+                <!-- 3. INVOICE -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="section-title">3. Invoicing</div>
+
+                        <div id="invLocked" class="text-muted small fst-italic mb-2" style="display:none">
+                            Invoice can be created after Delivery is issued.
+                        </div>
+
+                        <div id="invForm" style="display:none">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Invoice Number (Auto)</label>
+                                <input type="text" class="form-control form-control-sm bg-light" id="inpInvNo" readonly>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Payment Terms (Days)</label>
+                                <input type="number" class="form-control form-control-sm" id="inpInvTerms" value="30"
+                                    min="1">
+                            </div>
+                            <button class="btn btn-primary btn-sm w-100" onclick="createInvoice()">Generate
+                                Invoice</button>
+                        </div>
+
+                        <div id="invView" style="display:none">
+                            <div class="p-3 bg-light rounded border mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="mono fw-bold" id="viewInvNo">-</span>
+                                    <span class="badge bg-secondary" id="viewInvStatus">Unpaid</span>
+                                </div>
+                                <div class="d-flex justify-content-between small">
+                                    <span class="text-muted">Amount:</span>
+                                    <span class="fw-bold" id="viewInvAmt">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between small">
+                                    <span class="text-muted">Due Date:</span>
+                                    <span id="viewInvDue">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 4. PAYMENT VERIFICATION -->
+                <div class="card shadow-sm" id="cardPayment">
+                    <div class="card-body">
+                        <div class="section-title">4. Payment Verification</div>
+
+                        <div id="payLocked" class="text-muted small fst-italic">
+                            Waiting for invoice...
+                        </div>
+
+                        <!-- Payment Evidence Review -->
+                        <div id="payEvidence" style="display:none">
+                            <div class="alert alert-info small d-flex gap-2 align-items-center mb-3">
+                                <i class="bi bi-info-circle"></i>
+                                <div>Retail has submitted payment proof.</div>
+                            </div>
+
+                            <!-- Bulk Payment Indicator -->
+                            <div id="bulkPaymentAlert"
+                                class="alert alert-warning small d-flex gap-2 align-items-center mb-3"
+                                style="display:none">
+                                <i class="bi bi-receipt-cutoff"></i>
+                                <div>
+                                    <strong>Bulk Payment:</strong> This evidence is shared across <span
+                                        id="bulkPaymentCount">0</span> invoices.
+                                    <button class="btn btn-sm btn-outline-warning ms-2"
+                                        onclick="viewBulkPaymentDetails()">
+                                        View All Invoices
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="small fw-bold text-muted">Payment Evidence</label>
+                                <div id="evidencePreview" class="border rounded p-2 text-center">
+                                    <img src="" id="evidenceImg" class="evidence-preview" style="display:none"
+                                        onclick="viewFullEvidence()">
+                                    <div id="evidenceText" class="text-muted small">No evidence uploaded</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="small fw-bold">Amount Paid</label>
+                                <input type="number" class="form-control form-control-sm" id="inpPaidAmount"
+                                    placeholder="Enter amount received">
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success btn-sm flex-fill" onclick="verifyPayment()">
+                                    <i class="bi bi-check-circle me-1"></i>Verify Payment
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm flex-fill" onclick="rejectPayment()">
+                                    <i class="bi bi-x-circle me-1"></i>Reject
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="payDone" style="display:none" class="text-center text-success fw-bold py-2">
+                            <i class="bi bi-check-circle-fill me-1"></i> Payment Verified
+                        </div>
+
+                        <!-- Manual Override -->
+                        <div id="payManual" class="mt-3 pt-3 border-top" style="display:none">
+                            <label class="form-label small fw-bold text-muted">Manual Payment Entry</label>
+                            <div class="mb-2">
+                                <input type="number" class="form-control form-control-sm" id="inpManualAmount"
+                                    placeholder="Enter amount">
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-secondary flex-fill"
+                                    onclick="setManualPayment('Partial')">Mark Partial</button>
+                                <button class="btn btn-sm btn-outline-success flex-fill"
+                                    onclick="setManualPayment('Paid')">Mark Paid</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. RETURN/COMPLAINT REVIEW -->
+                <div class="card shadow-sm border-warning mt-4" id="cardReturnReview" style="display:none">
+                    <div class="card-body">
+                        <div class="section-title text-warning">5. Return/Complaint Review</div>
+
+                        <div id="returnReviewContent">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Evidence Modal -->
+    <div class="modal fade" id="evidenceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment Evidence</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="" id="modalEvidenceImg" style="max-width: 100%; max-height: 70vh;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // =========================
+        // UTILS
+        // =========================
+        const params = new URLSearchParams(window.location.search);
+        const orderNo = params.get("no");
+        if (!orderNo) { alert("Missing Order No"); window.location.href = "distributor_orders.html"; }
+
+        function loadJson(key, fb) {
+            try {
+                const r = localStorage.getItem(key);
+                return r ? JSON.parse(r) : fb;
+            } catch (e) { return fb; }
+        }
+        function saveJson(key, val) {
+            localStorage.setItem(key, JSON.stringify(val));
+        }
+        function fmtMoney(n) { return "Rp " + (n || 0).toLocaleString("id-ID"); }
+
+        function todayYMD() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function addDays(dateStr, days) {
+            const d = new Date(dateStr);
+            d.setDate(d.getDate() + days);
+            return d.toISOString().split('T')[0];
+        }
+
+        // =========================
+        // DATA LOADING
+        // =========================
+        const orders = loadJson("dolfin_retail_orders", []);
+        const linesMap = loadJson("dolfin_retail_order_lines", {});
+        const deliveries = loadJson("dolfin_retail_deliveries", []);
+        const payments = loadJson("dolfin_retail_payments", []);
+        const evidences = loadJson("dolfin_payment_evidence", []);
+
+        // Find Order
+        const orderIdx = orders.findIndex(o => o.no === orderNo);
+        if (orderIdx < 0) { alert("Order not found"); window.location.href = "distributor_orders.html"; }
+        const order = orders[orderIdx];
+
+        // Find Delivery
+        let delivery = deliveries.find(d => d.orderNo === orderNo);
+
+        // Find Payment
+        let payment = payments.find(p => p.orderNo === orderNo);
+
+        // Find Evidence (support both old and new structure)
+        let evidence = null;
+        if (order.evidenceId) {
+            // New bulk payment structure
+            evidence = evidences.find(e => e.evidenceId === order.evidenceId);
+        } else if (payment) {
+            // Old single invoice structure
+            evidence = evidences.find(e => e.invoiceNo === payment.invoiceNo);
+        }
+
+        // =========================
+        // RENDERING
+        // =========================
+
+        // 1. Header & Items
+        document.getElementById("txtOrderNo").textContent = order.no;
+        document.getElementById("txtRetailName").textContent = "Retailer: " + (order.retailName || order.customer || "Toko Retail");
+        document.getElementById("statusBadge").innerHTML = `<span class="badge bg-secondary fs-6">${order.status}</span>`;
+
+        const lines = linesMap[orderNo] || [
+            // Fallback Dummy Data - Baby Products
+            { sku: "MILK-001", name: "SGM Eksplor 1+ Madu 900g", qty: 12, price: 105000 },
+            { sku: "DIAP-001", name: "MamyPoko Pants Standar L 30", qty: 8, price: 65000 },
+            { sku: "BATH-001", name: "Zwitsal Baby Bath Natural 200ml", qty: 12, price: 21000 }
+        ];
+        const tbody = document.getElementById("tbodyItems");
+        let total = 0;
+        lines.forEach(item => {
+            const sub = (item.price || 0) * (item.qty || 0);
+            total += sub;
+            tbody.innerHTML += `<tr>
+                <td><div class="fw-semibold">${item.name}</div><div class="small text-muted">${item.sku}</div></td>
+                <td class="text-end small">${fmtMoney(item.price)}</td>
+                <td class="text-center">${item.qty}</td>
+                <td class="text-end fw-semibold">${fmtMoney(sub)}</td>
+            </tr>`;
+        });
+        document.getElementById("txtTotal").textContent = fmtMoney(total);
+
+        // =========================
+        // LOGIC CONTROLLER
+        // =========================
+        refreshUI();
+
+        function refreshUI() {
+            const s = order.status;
+
+            // 1. Order Intake
+            const divIntake = document.getElementById("cardActionIntake");
+            if (s === "Dipesan" || s === "Submitted") {
+                divIntake.style.display = "block";
+            } else {
+                divIntake.style.display = "none";
+            }
+
+            // 2. Delivery
+            const divDelivForm = document.getElementById("deliveryForm");
+            const divDelivTrack = document.getElementById("deliveryTracking");
+            const divDelivLock = document.getElementById("deliveryLocked");
+
+            if (s === "Dipesan" || s === "Submitted") {
+                divDelivForm.style.display = "none";
+                divDelivTrack.style.display = "none";
+                divDelivLock.style.display = "block";
+            } else if (!delivery) {
+                // Confirmed but no DO yet
+                divDelivForm.style.display = "block";
+                divDelivTrack.style.display = "none";
+                divDelivLock.style.display = "none";
+                // Auto-generate DO number
+                document.getElementById("inpDoNo").value = "DO-" + order.no.replace("ORD-", "");
+                // Set default ETA (3 days from now)
+                document.getElementById("inpDoDate").value = addDays(todayYMD(), 3);
+            } else {
+                // Has Delivery
+                divDelivForm.style.display = "none";
+                divDelivTrack.style.display = "block";
+                divDelivLock.style.display = "none";
+                document.getElementById("viewDoNo").textContent = delivery.doNo;
+                document.getElementById("viewDoDate").textContent = delivery.eta || delivery.estDate || "-";
+                document.getElementById("viewDoStatus").textContent = delivery.status;
+
+                // Hide buttons if delivered
+                const btnArea = document.getElementById("deliveryActions");
+                if (delivery.status === "Delivered" || delivery.status === "Sampai" || delivery.status === "Diterima") {
+                    btnArea.style.display = "none";
+                }
+            }
+
+            // 3. Invoice
+            const divInvForm = document.getElementById("invForm");
+            const divInvView = document.getElementById("invView");
+            const divInvLock = document.getElementById("invLocked");
+
+            // Invoice can only be created AFTER delivery is issued
+            if (!delivery) {
+                divInvForm.style.display = "none";
+                divInvView.style.display = "none";
+                divInvLock.style.display = "block";
+            } else if (!payment) {
+                // Delivery exists, allow invoice
+                divInvForm.style.display = "block";
+                divInvView.style.display = "none";
+                divInvLock.style.display = "none";
+                // Auto-generate invoice number
+                document.getElementById("inpInvNo").value = "INV/2026/" + order.no.replace("ORD-", "");
+            } else {
+                // Has Invoice
+                divInvForm.style.display = "none";
+                divInvView.style.display = "block";
+                divInvLock.style.display = "none";
+                document.getElementById("viewInvNo").textContent = payment.invoiceNo || payment.invNo;
+                document.getElementById("viewInvStatus").textContent = payment.status;
+                document.getElementById("viewInvAmt").textContent = fmtMoney(payment.total || payment.amount);
+                document.getElementById("viewInvDue").textContent = payment.dueDate || "-";
+            }
+
+            // 4. Payment Action
+            const divPayLock = document.getElementById("payLocked");
+            const divPayEvidence = document.getElementById("payEvidence");
+            const divPayDone = document.getElementById("payDone");
+            const divPayMan = document.getElementById("payManual");
+
+            divPayLock.style.display = "none";
+            divPayEvidence.style.display = "none";
+            divPayDone.style.display = "none";
+            divPayMan.style.display = "none";
+
+            if (!payment) {
+                divPayLock.style.display = "block";
+            } else if (payment.status === "Paid" || payment.status === "Lunas") {
+                divPayDone.style.display = "block";
+            } else if (evidence && evidence.status === "REPORTED") {
+                // Show evidence review
+                divPayEvidence.style.display = "block";
+
+                // Check if this is bulk payment
+                if (evidence.relatedInvoices && evidence.relatedInvoices.length > 1) {
+                    document.getElementById("bulkPaymentAlert").style.display = "flex";
+                    document.getElementById("bulkPaymentCount").textContent = evidence.relatedInvoices.length;
+                } else {
+                    document.getElementById("bulkPaymentAlert").style.display = "none";
+                }
+
+                // Display evidence
+                if (evidence.imageData) {
+                    document.getElementById("evidenceImg").src = evidence.imageData;
+                    document.getElementById("evidenceImg").style.display = "block";
+                    document.getElementById("evidenceText").style.display = "none";
+                } else {
+                    document.getElementById("evidenceImg").style.display = "none";
+                    document.getElementById("evidenceText").style.display = "block";
+                    document.getElementById("evidenceText").textContent = evidence.note || "Evidence uploaded (no preview)";
+                }
+
+                // Pre-fill amount
+                document.getElementById("inpPaidAmount").value = payment.total;
+            } else {
+                // Show manual entry
+                divPayMan.style.display = "block";
+            }
+
+            // Update Header Badge
+            document.getElementById("statusBadge").innerHTML = `<span class="badge bg-primary fs-6">${s}</span>`;
+        }
+
+        // =========================
+        // ACTIONS
+        // =========================
+
+        function updateStatus(newStatus) {
+            if (!confirm("Confirm status change to " + newStatus + "?")) return;
+            order.status = newStatus;
+            saveJson("dolfin_retail_orders", orders);
+            location.reload();
+        }
+
+        function issueDO() {
+            const doNo = document.getElementById("inpDoNo").value;
+            const date = document.getElementById("inpDoDate").value;
+            if (!doNo || !date) { alert("Please fill DO Info"); return; }
+
+            const newDo = {
+                doNo: doNo,
+                orderNo: orderNo,
+                distributor: order.dist || "Distributor Current",
+                status: "DO Issued",
+                eta: date,
+                timeline: [
+                    { status: "DO Issued", date: todayYMD() }
+                ]
+            };
+
+            deliveries.push(newDo);
+            saveJson("dolfin_retail_deliveries", deliveries);
+
+            delivery = newDo;
+            location.reload();
+        }
+
+        function btnShip() {
+            if (!delivery) return;
+            delivery.status = "Shipped";
+            delivery.timeline.push({ status: "Shipped", date: todayYMD() });
+            order.status = "Dikirim";
+            saveJson("dolfin_retail_deliveries", deliveries);
+            saveJson("dolfin_retail_orders", orders);
+            location.reload();
+        }
+
+        function btnDeliver() {
+            if (!confirm("Mark as delivered?")) return;
+            if (!delivery) return;
+            delivery.status = "Delivered";
+            delivery.timeline.push({ status: "Delivered", date: todayYMD() });
+            order.status = "Sampai";
+            saveJson("dolfin_retail_deliveries", deliveries);
+            saveJson("dolfin_retail_orders", orders);
+            location.reload();
+        }
+
+        function createInvoice() {
+            const invNo = document.getElementById("inpInvNo").value;
+            const terms = parseInt(document.getElementById("inpInvTerms").value) || 30;
+            if (!invNo) return alert("Invoice number required");
+
+            const today = todayYMD();
+            const dueDate = addDays(today, terms);
+
+            const newPay = {
+                orderNo: orderNo,
+                invoiceNo: invNo,
+                distributor: order.dist || "Distributor Current",
+                invoiceDate: today,
+                dueDate: dueDate,
+                paymentTermDays: terms,
+                total: total,
+                paid: 0,
+                status: "Unpaid"
+            };
+
+            payments.push(newPay);
+            saveJson("dolfin_retail_payments", payments);
+            payment = newPay;
+            refreshUI();
+        }
+
+        function verifyPayment() {
+            if (!payment || !evidence) return;
+
+            const paidAmt = parseFloat(document.getElementById("inpPaidAmount").value) || 0;
+            if (paidAmt <= 0) {
+                alert("Please enter valid payment amount");
+                return;
+            }
+
+            if (!confirm(`Verify payment of ${fmtMoney(paidAmt)}?`)) return;
+
+            // Update payment
+            payment.paid = paidAmt;
+            if (paidAmt >= payment.total) {
+                payment.status = "Paid";
+            } else {
+                payment.status = "Partial";
+            }
+
+            // Update evidence status
+            evidence.status = "VERIFIED";
+            evidence.verifiedDate = todayYMD();
+            evidence.verifiedAmount = paidAmt;
+
+            saveJson("dolfin_retail_payments", payments);
+            saveJson("dolfin_payment_evidence", evidences);
+
+            alert("Payment verified successfully!");
+            location.reload();
+        }
+
+        function rejectPayment() {
+            if (!evidence) return;
+            if (!confirm("Reject this payment evidence?")) return;
+
+            evidence.status = "REJECTED";
+            evidence.rejectedDate = todayYMD();
+
+            saveJson("dolfin_payment_evidence", evidences);
+
+            alert("Payment evidence rejected");
+            location.reload();
+        }
+
+        function setManualPayment(status) {
+            if (!payment) return;
+
+            const amt = parseFloat(document.getElementById("inpManualAmount").value) || 0;
+            if (amt <= 0) {
+                alert("Please enter valid amount");
+                return;
+            }
+
+            payment.paid = amt;
+            payment.status = status === "Paid" ? "Paid" : "Partial";
+
+            saveJson("dolfin_retail_payments", payments);
+            alert("Payment updated");
+            refreshUI();
+        }
+
+        function viewFullEvidence() {
+            if (!evidence || !evidence.imageData) return;
+            document.getElementById("modalEvidenceImg").src = evidence.imageData;
+            new bootstrap.Modal(document.getElementById('evidenceModal')).show();
+        }
+
+        function viewBulkPaymentDetails() {
+            if (!evidence || !evidence.relatedInvoices) return;
+
+            const invoiceList = evidence.relatedInvoices.map((invNo, idx) => {
+                const ord = orders.find(o => o.invoiceNo === invNo);
+                return `${idx + 1}. ${invNo} - ${ord ? rupiah(ord.total) : 'N/A'}`;
+            }).join('\n');
+
+            alert(`Bulk Payment Evidence\n\nTotal Amount: ${rupiah(evidence.totalAmount)}\nTotal Invoices: ${evidence.relatedInvoices.length}\n\nInvoices:\n${invoiceList}\n\nNote: ${evidence.note || 'No note'}`);
+        }
+
+        // =========================
+        // RETURN/COMPLAINT REVIEW
+        // =========================
+
+        const LS_RETURNS = "dolfin_returns";
+        const returns = loadJson(LS_RETURNS, []);
+        const returnRequest = returns.find(r => r.orderNo === orderNo);
+
+        if (returnRequest) {
+            document.getElementById('cardReturnReview').style.display = 'block';
+
+            let statusBadge = 'warning';
+            let statusText = 'Pending Review';
+            if (returnRequest.status === 'Approved') {
+                statusBadge = 'success';
+                statusText = 'Approved';
+            } else if (returnRequest.status === 'Rejected') {
+                statusBadge = 'danger';
+                statusText = 'Rejected';
+            }
+
+            // Build items list
+            const itemsList = returnRequest.items.map(item => `
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                    <div>
+                        <strong>${item.name}</strong>
+                        <div class="small text-muted">${item.sku}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="text-danger fw-bold">${item.returnQty} / ${item.orderedQty}</div>
+                        <div class="small text-muted">${fmtMoney(item.price)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            let actionButtons = '';
+            if (returnRequest.status === 'Pending') {
+                actionButtons = `
+                    <div class="d-flex gap-2 mt-3">
+                        <button class="btn btn-success btn-sm flex-fill" onclick="approveReturn('${returnRequest.id}')">
+                            <i class="bi bi-check-circle me-1"></i>Approve Return
+                        </button>
+                        <button class="btn btn-danger btn-sm flex-fill" onclick="rejectReturn('${returnRequest.id}')">
+                            <i class="bi bi-x-circle me-1"></i>Reject
+                        </button>
+                    </div>
+                `;
+            } else if (returnRequest.status === 'Approved') {
+                actionButtons = `
+                    <div class="alert alert-success small mt-3 mb-0">
+                        <i class="bi bi-check-circle me-1"></i>
+                        <strong>Return Approved</strong> on ${new Date(returnRequest.approvedAt).toLocaleString('id-ID')}
+                        ${returnRequest.approvalNote ? `<div class="mt-1">Note: ${returnRequest.approvalNote}</div>` : ''}
+                    </div>
+                `;
+            } else if (returnRequest.status === 'Rejected') {
+                actionButtons = `
+                    <div class="alert alert-danger small mt-3 mb-0">
+                        <i class="bi bi-x-circle me-1"></i>
+                        <strong>Return Rejected</strong> on ${new Date(returnRequest.rejectedAt).toLocaleString('id-ID')}
+                        ${returnRequest.rejectionNote ? `<div class="mt-1">Reason: ${returnRequest.rejectionNote}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            document.getElementById('returnReviewContent').innerHTML = `
+                <div class="alert alert-${statusBadge} small mb-3">
+                    <div class="fw-bold"><i class="bi bi-info-circle me-1"></i>Status: ${statusText}</div>
+                    <div class="small text-muted">Submitted: ${new Date(returnRequest.createdAt).toLocaleString('id-ID')}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Reason:</label>
+                    <div class="badge bg-warning text-dark">${returnRequest.reason}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Description:</label>
+                    <div class="p-2 bg-light rounded border small">${returnRequest.description}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Items:</label>
+                    <div class="border rounded p-2">
+                        ${itemsList}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Photo Evidence:</label>
+                    <div class="border rounded p-2 text-center">
+                        <img src="${returnRequest.photoData}" class="img-fluid" style="max-height: 250px; cursor: pointer;" 
+                            onclick="viewReturnPhoto('${returnRequest.id}')">
+                        <div class="small text-muted mt-1">${returnRequest.photoFileName}</div>
+                    </div>
+                </div>
+
+                ${actionButtons}
+            `;
+        }
+
+        window.viewReturnPhoto = function (returnId) {
+            const ret = returns.find(r => r.id === returnId);
+            if (!ret) return;
+
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Return Evidence Photo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="${ret.photoData}" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            modal.addEventListener('hidden.bs.modal', () => modal.remove());
+        };
+
+        window.approveReturn = function (returnId) {
+            const note = prompt('Approval note (optional):');
+            if (note === null) return; // Cancelled
+
+            const returnIndex = returns.findIndex(r => r.id === returnId);
+            if (returnIndex === -1) return;
+
+            returns[returnIndex].status = 'Approved';
+            returns[returnIndex].approvedAt = new Date().toISOString();
+            returns[returnIndex].approvedBy = user.email;
+            if (note) returns[returnIndex].approvalNote = note;
+
+            saveJson(LS_RETURNS, returns);
+
+            // Update order status
+            const orderIndex = orders.findIndex(o => o.no === orderNo);
+            if (orderIndex !== -1) {
+                orders[orderIndex].complaintStatus = 'Approved';
+                saveJson("dolfin_retail_orders", orders);
+            }
+
+            alert('✅ Return request approved!\\n\\nNote: In production, this would trigger inventory adjustment and refund processing.');
+            location.reload();
+        };
+
+        window.rejectReturn = function (returnId) {
+            const reason = prompt('Rejection reason (required):');
+            if (!reason || reason.trim() === '') {
+                alert('Rejection reason is required!');
+                return;
+            }
+
+            const returnIndex = returns.findIndex(r => r.id === returnId);
+            if (returnIndex === -1) return;
+
+            returns[returnIndex].status = 'Rejected';
+            returns[returnIndex].rejectedAt = new Date().toISOString();
+            returns[returnIndex].rejectedBy = user.email;
+            returns[returnIndex].rejectionNote = reason;
+
+            saveJson(LS_RETURNS, returns);
+
+            // Update order status
+            const orderIndex = orders.findIndex(o => o.no === orderNo);
+            if (orderIndex !== -1) {
+                orders[orderIndex].complaintStatus = 'Rejected';
+                saveJson("dolfin_retail_orders", orders);
+            }
+
+            alert('❌ Return request rejected.\\n\\nReason: ' + reason);
+            location.reload();
+        };
+
+    </script>
+</body>
+
+</html>

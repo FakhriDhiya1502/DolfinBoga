@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Retail — Orders | Dolfin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 56px);
+        }
+
+        .nav-pill {
+            border-radius: 10px;
+        }
+
+        .card {
+            border: 0;
+        }
+
+        .muted-xs {
+            font-size: .82rem;
+            color: #6c757d;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="retail_dashboard.html">Dolfin</a>
+
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Retail Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="retail_profile.html">Profile</a></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+
+            <!-- Sidebar -->
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                            <div>
+                                <div class="fw-semibold">Daftar Transaksi</div>
+                                <div class="muted-xs">List transaksi order retail (ringkas). Data dummy tersimpan di
+                                    localStorage.</div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-success btn-sm" onclick="createDemoInvoices()">
+                                    <i class="bi bi-database-add me-1"></i>Create Demo Invoices
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm" onclick="seedReturnDemoData()">
+                                    <i class="bi bi-arrow-return-left me-1"></i>Seed Return Demo
+                                </button>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                <input id="q" class="form-control form-control-sm" style="width:260px"
+                                    placeholder="Cari Order No / Distributor…">
+                                <select id="fDist" class="form-select form-select-sm" style="width:220px">
+                                    <option value="">Semua Distributor</option>
+                                </select>
+                                <select id="fStatus" class="form-select form-select-sm" style="width:180px">
+                                    <option value="">Semua Status</option>
+                                    <option>Dipesan</option>
+                                    <option>Dikonfirmasi</option>
+                                    <option>Dikirim</option>
+                                    <option>Sampai</option>
+                                </select>
+                                <button class="btn btn-outline-secondary btn-sm" id="btnReset">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:160px">Order No</th>
+                                    <th>Distributor</th>
+                                    <th style="width:120px">Date</th>
+                                    <th style="width:140px">Status</th>
+                                    <th class="text-end" style="width:150px">Total</th>
+                                    <th style="width:120px"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="text-center text-muted small mt-4 mb-2">
+                    © 2026 Dolfin — Retail Portal
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // =========================
+        // SESSION GUARD
+        // =========================
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=retail";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        // =========================
+        // DATA SOURCE
+        // =========================
+        const LS_ORDERS = "dolfin_retail_orders";
+
+        function loadOrders() {
+            try {
+                const raw = localStorage.getItem(LS_ORDERS);
+                if (raw) {
+                    let data = JSON.parse(raw);
+                    // MIGRATION: Fix old statuses to new Indonesian terms
+                    let changed = false;
+                    const map = {
+                        "Submitted": "Dipesan",
+                        "Confirmed": "Dikonfirmasi",
+                        "DO Issued": "Dikonfirmasi",
+                        "Shipped": "Dikirim",
+                        "Delivered": "Sampai",
+                        "Closed": "Sampai"
+                    };
+                    data.forEach(o => {
+                        if (map[o.status]) {
+                            o.status = map[o.status];
+                            changed = true;
+                        }
+                    });
+                    if (changed) localStorage.setItem(LS_ORDERS, JSON.stringify(data));
+                    return data;
+                }
+            } catch (e) { }
+            // fallback seed kalau belum ada
+            return [
+                { no: "ORD-000128", dist: "Distributor A", date: "2026-01-08", status: "Dipesan", total: 1240000 },
+                { no: "ORD-000127", dist: "Distributor B", date: "2026-01-07", status: "Dikirim", total: 438000 }
+            ];
+        }
+
+        let orders = loadOrders();
+
+        function rupiah(n) { return "Rp " + (n || 0).toLocaleString("id-ID"); }
+
+        function badgeStatus(status) {
+            const map = {
+                "Dipesan": "bg-primary",
+                "Dikonfirmasi": "bg-info",
+                "Dikirim": "bg-warning text-dark",
+                "Sampai": "bg-success",
+                "Selesai": "bg-success"
+            };
+            const cls = map[status] || "bg-secondary";
+            return `<span class="badge ${cls}">${status}</span>`;
+        }
+
+        function renderDistFilter() {
+            const sel = document.getElementById("fDist");
+            sel.innerHTML = `<option value="">Semua Distributor</option>`;
+            [...new Set(orders.map(o => o.dist))].forEach(d => {
+                const opt = document.createElement("option");
+                opt.value = d;
+                opt.textContent = d;
+                sel.appendChild(opt);
+            });
+        }
+
+        function render() {
+            const q = document.getElementById("q").value.trim().toLowerCase();
+            const fDist = document.getElementById("fDist").value;
+            const fStatus = document.getElementById("fStatus").value;
+
+            const rows = orders.filter(o => {
+                const matchQ = !q || (o.no.toLowerCase().includes(q) || o.dist.toLowerCase().includes(q));
+                const matchD = !fDist || o.dist === fDist;
+                const matchS = !fStatus || o.status === fStatus;
+                return matchQ && matchD && matchS;
+            });
+
+            const body = document.getElementById("ordersBody");
+            body.innerHTML = "";
+
+            if (rows.length === 0) {
+                body.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada data.</td></tr>`;
+                return;
+            }
+
+            rows.forEach(o => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+        <td class="fw-semibold mono">${o.no}</td>
+        <td>${o.dist}</td>
+        <td>${o.date}</td>
+        <td>${badgeStatus(o.status)}</td>
+        <td class="text-end">${rupiah(o.total)}</td>
+        <td class="text-end">
+  <a class="btn btn-sm btn-outline-primary" href="retail_order_detail.html?no=${o.no}">Detail</a>
+</td>
+      `;
+                body.appendChild(tr);
+            });
+        }
+
+
+
+        // Events
+        document.getElementById("q").addEventListener("input", render);
+        document.getElementById("fDist").addEventListener("change", render);
+        document.getElementById("fStatus").addEventListener("change", render);
+        document.getElementById("btnReset").addEventListener("click", () => {
+            document.getElementById("q").value = "";
+            document.getElementById("fDist").value = "";
+            document.getElementById("fStatus").value = "";
+            render();
+        });
+
+        // Init
+        renderDistFilter();
+        render();
+
+        // =========================
+        // CREATE COMPREHENSIVE DEMO DATA
+        // =========================
+        function createDemoInvoices() {
+            if (!confirm("This will RESET all retail data and create a comprehensive demo set (Multiple Distributors, Varied Statuses). Continue?")) return;
+
+            // 1. Define Distributors
+            const distA = "PT Sumber Makmur";
+            const distB = "CV Distribusi Cepat";
+            const distC = "Global Food";
+
+            // 2. Create Orders
+            const newOrders = [
+                // --- DISTRIBUTOR A (4 Unpaid, 1 Paid, 1 Process) ---
+                { no: "ORD-2026-101", dist: distA, date: "2026-01-08", total: 1500000, status: "Sampai", items: "Zwitsal Baby Bath (24), Merries Pants (40)", invoiceNo: "INV/2026/A-101" },
+                { no: "ORD-2026-102", dist: distA, date: "2026-01-09", total: 2750000, status: "Sampai", items: "SGM Eksplor 1+ (50), Bebelac 3 (20)", invoiceNo: "INV/2026/A-102" },
+                { no: "ORD-2026-103", dist: distA, date: "2026-01-10", total: 3200000, status: "Sampai", items: "Milna Biskuit (100), Promina Bubur (50)", invoiceNo: "INV/2026/A-103" },
+                { no: "ORD-2026-104", dist: distA, date: "2026-01-10", total: 850000, status: "Sampai", items: "MamyPoko Standar (20)", invoiceNo: "INV/2026/A-104" },
+                { no: "ORD-2026-105", dist: distA, date: "2026-01-05", total: 5000000, status: "Sampai", items: "Pediasure Vanilla (100)", invoiceNo: "INV/2026/A-105" }, // Paid
+                { no: "ORD-2026-106", dist: distA, date: "2026-01-11", total: 1200000, status: "Dikirim", items: "Cussons Baby Oil (48)", invoiceNo: null }, // No Invoice yet
+
+                // --- DISTRIBUTOR B (2 Unpaid, 1 Paid) ---
+                { no: "ORD-2026-201", dist: distB, date: "2026-01-08", total: 4500000, status: "Sampai", items: "Morinaga Chil Kid (40)", invoiceNo: "INV/2026/B-201" },
+                { no: "ORD-2026-202", dist: distB, date: "2026-01-09", total: 1800000, status: "Sampai", items: "Sun Bubur Bayi (200)", invoiceNo: "INV/2026/B-202" },
+                { no: "ORD-2026-203", dist: distB, date: "2026-01-06", total: 3000000, status: "Sampai", items: "Nutrilon Royal 3 (10)", invoiceNo: "INV/2026/B-203" }, // Paid
+
+                // --- DISTRIBUTOR C (1 Unpaid - Single test) ---
+                { no: "ORD-2026-301", dist: distC, date: "2026-01-10", total: 750000, status: "Sampai", items: "Nestle Cerelac (50)", invoiceNo: "INV/2026/C-301" },
+                { no: "ORD-2026-302", dist: distC, date: "2026-01-11", total: 900000, status: "Dikonfirmasi", items: "Pure Baby Wash (24)", invoiceNo: null }, // Not delivered
+            ];
+
+            // 3. Create Payments
+            const newPayments = [];
+
+            newOrders.forEach(o => {
+                if (o.invoiceNo) {
+                    let status = "Unpaid";
+                    // Mark specific orders as Paid
+                    if (o.no === "ORD-2026-105" || o.no === "ORD-2026-203") {
+                        status = "Paid";
+                        o.paymentStatus = "Paid";
+                    } else {
+                        o.paymentStatus = "Unpaid";
+                    }
+
+                    newPayments.push({
+                        invoiceNo: o.invoiceNo,
+                        orderNo: o.no,
+                        distributor: o.dist,
+                        total: o.total,
+                        dueDate: "2026-02-10",
+                        status: status,
+                        createdAt: o.date
+                    });
+                }
+            });
+
+            // 4. CREATE DELIVERY RECORDS (NEW!)
+            const newDeliveries = [];
+
+            newOrders.forEach(o => {
+                const statusLower = (o.status || "").toLowerCase();
+
+                // Only create delivery for Dikirim or Sampai status
+                if (statusLower === "dikirim" || statusLower === "sampai") {
+                    const doDate = new Date(o.date);
+                    doDate.setDate(doDate.getDate() + 1); // Delivery next day
+                    const doDateStr = doDate.toISOString().split('T')[0];
+
+                    const delivery = {
+                        orderNo: o.no,
+                        doNo: "DO-" + o.no.replace("ORD-", ""),
+                        status: statusLower === "sampai" ? "Delivered" : "Shipped",
+                        timeline: [
+                            { status: "Pesanan Dibuat", date: o.date },
+                            { status: "Pesanan Dikonfirmasi", date: o.date },
+                            { status: "Dikirim oleh " + o.dist, date: doDateStr }
+                        ]
+                    };
+
+                    // Add received date if status is Sampai
+                    if (statusLower === "sampai") {
+                        const receivedDate = new Date(doDate);
+                        receivedDate.setDate(receivedDate.getDate() + 1);
+                        const receivedDateStr = receivedDate.toISOString().split('T')[0];
+                        delivery.timeline.push({
+                            status: "Diterima / Sampai di Toko",
+                            date: receivedDateStr
+                        });
+                    }
+
+                    newDeliveries.push(delivery);
+                }
+            });
+
+            // 5. Save to Storage (INCLUDING DELIVERIES!)
+            localStorage.setItem(LS_ORDERS, JSON.stringify(newOrders));
+            localStorage.setItem("dolfin_retail_payments", JSON.stringify(newPayments));
+            localStorage.setItem("dolfin_retail_deliveries", JSON.stringify(newDeliveries)); // ADDED!
+            localStorage.setItem("dolfin_payment_evidence", JSON.stringify([])); // Clear evidence
+
+            alert(`✅ Comprehensive Demo Data Created!\n\n` +
+                `• ${distA}: 4 Unpaid Invoices (Bulk Test)\n` +
+                `• ${distB}: 2 Unpaid Invoices (Bulk Test)\n` +
+                `• ${distC}: 1 Unpaid Invoice (Single Test)\n` +
+                `• Plus varied Paid & Process orders.\n` +
+                `• Created ${newDeliveries.length} delivery records!\n\n` +
+                `Go to [Payment] menu to test scenarios!`);
+
+            location.reload();
+        }
+
+        // =========================
+        // SEED RETURN DEMO DATA
+        // =========================
+        function seedReturnDemoData() {
+            if (!confirm("This will create demo return/complaint data for existing orders. Continue?")) return;
+
+            const LS_RETURNS = "dolfin_returns";
+            const LS_ORDER_LINES = "dolfin_retail_order_lines";
+
+            // Load existing data
+            let returns = [];
+            try {
+                returns = JSON.parse(localStorage.getItem(LS_RETURNS) || "[]");
+            } catch (e) { }
+
+            let orderLines = {};
+            try {
+                orderLines = JSON.parse(localStorage.getItem(LS_ORDER_LINES) || "{}");
+            } catch (e) { }
+
+            // CLEANUP: Remove orphaned complaint flags from orders without actual return data
+            orders.forEach(order => {
+                if (order.hasComplaint) {
+                    const hasReturnData = returns.find(r => r.orderNo === order.no);
+                    if (!hasReturnData) {
+                        // Orphaned flag - remove it
+                        delete order.hasComplaint;
+                        delete order.complaintStatus;
+                    }
+                }
+            });
+
+            // Sample photo data (small base64 placeholder)
+            const samplePhotoData = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5EYW1hZ2VkIFByb2R1Y3QgUGhvdG88L3RleHQ+PC9zdmc+";
+
+            // Find delivered orders without existing complaints
+            const deliveredOrders = orders.filter(o =>
+                o.status === "Sampai" && !o.hasComplaint
+            );
+
+            if (deliveredOrders.length === 0) {
+                alert("⚠️ No delivered orders found without complaints.\\n\\nPlease create some delivered orders first using 'Create Demo Invoices'.");
+                return;
+            }
+
+            // Create demo returns for up to 4 delivered orders
+            const demoReturns = [];
+            const maxReturns = Math.min(4, deliveredOrders.length);
+
+            // Return 1: Pending - Barang Rusak
+            if (maxReturns >= 1) {
+                const order1 = deliveredOrders[0];
+                const items1 = orderLines[order1.no] || [
+                    { sku: "BRG-001", name: "SGM Eksplor 1+ Madu 900g", qty: 12, price: 105000 }
+                ];
+
+                demoReturns.push({
+                    id: "RET-" + Date.now() + "-001",
+                    orderNo: order1.no,
+                    distributor: order1.dist,
+                    items: [{
+                        sku: items1[0].sku,
+                        name: items1[0].name,
+                        orderedQty: items1[0].qty,
+                        returnQty: Math.min(2, items1[0].qty),
+                        price: items1[0].price
+                    }],
+                    reason: "Rusak",
+                    description: "2 kaleng susu diterima dalam kondisi penyok dan bocor. Isi susu sudah mengeras.",
+                    photoData: samplePhotoData,
+                    photoFileName: "rusak_susu_sgm.jpg",
+                    status: "Pending",
+                    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+                    createdBy: "retailer@demo.com"
+                });
+
+                // Update order
+                order1.hasComplaint = true;
+                order1.complaintStatus = "Pending";
+            }
+
+            // Return 2: Approved - Barang Kadaluarsa
+            if (maxReturns >= 2) {
+                const order2 = deliveredOrders[1];
+                const items2 = orderLines[order2.no] || [
+                    { sku: "BRG-002", name: "MamyPoko Pants L 30", qty: 8, price: 65000 }
+                ];
+
+                demoReturns.push({
+                    id: "RET-" + Date.now() + "-002",
+                    orderNo: order2.no,
+                    distributor: order2.dist,
+                    items: [{
+                        sku: items2[0].sku,
+                        name: items2[0].name,
+                        orderedQty: items2[0].qty,
+                        returnQty: Math.min(3, items2[0].qty),
+                        price: items2[0].price
+                    }],
+                    reason: "Kadaluarsa",
+                    description: "3 pack popok diterima dengan tanggal kadaluarsa hanya 1 bulan lagi. Seharusnya minimal 6 bulan.",
+                    photoData: samplePhotoData,
+                    photoFileName: "kadaluarsa_mamypoko.jpg",
+                    status: "Approved",
+                    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+                    createdBy: "retailer@demo.com",
+                    approvedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
+                    approvedBy: "distributor@demo.com",
+                    approvalNote: "Approved. Kami akan kirim replacement dengan exp date yang lebih panjang."
+                });
+
+                // Update order
+                order2.hasComplaint = true;
+                order2.complaintStatus = "Approved";
+            }
+
+            // Return 3: Rejected - Salah Barang (tapi ternyata benar)
+            if (maxReturns >= 3) {
+                const order3 = deliveredOrders[2];
+                const items3 = orderLines[order3.no] || [
+                    { sku: "BRG-003", name: "Zwitsal Baby Bath Natural 200ml", qty: 12, price: 21000 }
+                ];
+
+                demoReturns.push({
+                    id: "RET-" + Date.now() + "-003",
+                    orderNo: order3.no,
+                    distributor: order3.dist,
+                    items: [{
+                        sku: items3[0].sku,
+                        name: items3[0].name,
+                        orderedQty: items3[0].qty,
+                        returnQty: items3[0].qty,
+                        price: items3[0].price
+                    }],
+                    reason: "Salah Barang",
+                    description: "Saya pesan varian Natural tapi yang datang varian Classic.",
+                    photoData: samplePhotoData,
+                    photoFileName: "salah_varian.jpg",
+                    status: "Rejected",
+                    createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), // 2 days ago
+                    createdBy: "retailer@demo.com",
+                    rejectedAt: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(), // 1.5 days ago
+                    rejectedBy: "distributor@demo.com",
+                    rejectionNote: "Setelah dicek, barang yang dikirim sudah sesuai dengan PO. Varian Natural memang packaging-nya mirip dengan Classic. Mohon cek kembali label produk."
+                });
+
+                // Update order
+                order3.hasComplaint = true;
+                order3.complaintStatus = "Rejected";
+            }
+
+            // Return 4: Pending - Jumlah Kurang
+            if (maxReturns >= 4) {
+                const order4 = deliveredOrders[3];
+                const items4 = orderLines[order4.no] || [
+                    { sku: "BRG-004", name: "Dancow 1+ Vanilla 800g", qty: 10, price: 112000 }
+                ];
+
+                demoReturns.push({
+                    id: "RET-" + Date.now() + "-004",
+                    orderNo: order4.no,
+                    distributor: order4.dist,
+                    items: [{
+                        sku: items4[0].sku,
+                        name: items4[0].name,
+                        orderedQty: items4[0].qty,
+                        returnQty: Math.min(2, items4[0].qty),
+                        price: items4[0].price
+                    }],
+                    reason: "Kurang",
+                    description: "Order 10 kaleng tapi yang datang hanya 8 kaleng. Kurang 2 kaleng.",
+                    photoData: samplePhotoData,
+                    photoFileName: "kurang_dancow.jpg",
+                    status: "Pending",
+                    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
+                    createdBy: "retailer@demo.com"
+                });
+
+                // Update order
+                order4.hasComplaint = true;
+                order4.complaintStatus = "Pending";
+            }
+
+            // Add new returns to existing array
+            demoReturns.forEach(newReturn => {
+                returns.push(newReturn);
+            });
+
+            // Save to localStorage
+            localStorage.setItem(LS_RETURNS, JSON.stringify(returns));
+            localStorage.setItem(LS_ORDERS, JSON.stringify(orders));
+
+            alert(`✅ Return Demo Data Created!\\n\\n` +
+                `• ${demoReturns.length} return requests created\\n` +
+                `• Orphaned complaint flags cleaned\\n` +
+                `• 2 Pending (awaiting review)\\n` +
+                `• 1 Approved (with replacement note)\\n` +
+                `• 1 Rejected (with explanation)\\n\\n` +
+                `Go to Order Details to see the complaints!`);
+
+            location.reload();
+        }
+    </script>
+
+    <script src="sidebar.js"></script>
+    <script>
+        // Init Sidebar
+        new SidebarSystem('retail', 'orders').render();
+    </script>
+</body>
+
+</html>

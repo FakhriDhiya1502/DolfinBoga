@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Distributor — Inventory Management | Dolfin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 56px);
+        }
+
+        .nav-pill {
+            border-radius: 10px;
+        }
+
+        .card {
+            border: 0;
+            border-radius: 12px;
+        }
+
+        .badge-stock-low {
+            background: #dc3545;
+        }
+
+        .badge-stock-ok {
+            background: #198754;
+        }
+
+        .muted-xs {
+            font-size: .82rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="distributor_profile.html">Profile</a></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0">Inventory Management</h5>
+                        <div class="muted-xs">Kelola produk, SKU, harga, dan stok yang ditampilkan ke Retailer.</div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-success btn-sm" id="btnAddProduct">
+                            <i class="bi bi-plus-circle me-1"></i>Tambah Produk
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split"
+                            data-bs-toggle="dropdown">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <h6 class="dropdown-header">Import Produk</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="#" id="btnAddManual">
+                                    <i class="bi bi-pencil-square me-2"></i>Manual Input
+                                </a></li>
+                            <li><a class="dropdown-item" href="#" id="btnImportExcel">
+                                    <i class="bi bi-file-earmark-excel me-2"></i>Upload Excel/CSV
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" id="btnAPIIntegration">
+                                    <i class="bi bi-cloud-arrow-up me-2"></i>API Integration
+                                </a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted small">Total Products</div>
+                                        <div class="fs-4 fw-bold" id="totalProducts">0</div>
+                                    </div>
+                                    <i class="bi bi-box-seam fs-2 text-primary opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted small">Active Products</div>
+                                        <div class="fs-4 fw-bold text-success" id="activeProducts">0</div>
+                                    </div>
+                                    <i class="bi bi-check-circle fs-2 text-success opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted small">Low Stock</div>
+                                        <div class="fs-4 fw-bold text-danger" id="lowStockProducts">0</div>
+                                    </div>
+                                    <i class="bi bi-exclamation-triangle fs-2 text-danger opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted small">Total Value</div>
+                                        <div class="fs-5 fw-bold" id="totalValue">Rp 0</div>
+                                    </div>
+                                    <i class="bi bi-cash-stack fs-2 text-info opacity-25"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Table -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                            <div class="fw-bold">Daftar Produk</div>
+                            <div class="d-flex gap-2">
+                                <input type="text" id="searchProduct" class="form-control form-control-sm"
+                                    placeholder="Cari SKU atau Nama..." style="width: 250px;">
+                                <select id="filterCategory" class="form-select form-select-sm" style="width: 180px;">
+                                    <option value="">Semua Kategori</option>
+                                    <option value="Baby Care">Baby Care</option>
+                                    <option value="Food & Beverage">Food & Beverage</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Household">Household</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Nama Produk</th>
+                                    <th>Kategori</th>
+                                    <th class="text-end">Harga</th>
+                                    <th class="text-center">Stok</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">Tidak ada produk. Klik "Tambah
+                                        Produk" untuk mulai.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Tambah Produk Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm">
+                        <input type="hidden" id="editProductId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">SKU <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="inputSKU" required
+                                    placeholder="Contoh: BRG-001">
+                                <div class="form-text">Kode unik produk (alphanumeric)</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Nama Produk <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="inputName" required
+                                    placeholder="Contoh: Susu Formula 400g">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Kategori <span class="text-danger">*</span></label>
+                                <select class="form-select" id="inputCategory" required>
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="Baby Care">Baby Care</option>
+                                    <option value="Food & Beverage">Food & Beverage</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Household">Household</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Harga Satuan <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="inputPrice" required min="0"
+                                    placeholder="50000">
+                                <div class="form-text">Harga per unit (Rupiah)</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Stok <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="inputStock" required min="0"
+                                    placeholder="100">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Min. Order Qty</label>
+                                <input type="number" class="form-control" id="inputMinOrder" min="1" value="1">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Deskripsi (Opsional)</label>
+                                <textarea class="form-control" id="inputDesc" rows="3"
+                                    placeholder="Deskripsi produk..."></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="inputActive" checked>
+                                    <label class="form-check-label fw-bold" for="inputActive">Aktif (Tampilkan ke
+                                        Retailer)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveProduct">
+                        <i class="bi bi-check-circle me-1"></i>Simpan Produk
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Excel/CSV Upload Modal -->
+    <div class="modal fade" id="excelUploadModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success bg-opacity-10">
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-excel me-2"></i>Import Produk dari Excel/CSV
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Format Excel/CSV:</strong> Kolom harus berurutan:
+                        <code>SKU, Nama, Kategori, Harga, Stok, Min Order, Deskripsi</code>
+                        <br>
+                        <a href="#" id="btnDownloadTemplate" class="alert-link">Download Template Excel</a>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Upload File</label>
+                        <input type="file" class="form-control" id="fileExcel" accept=".csv,.xlsx,.xls">
+                        <div class="form-text">Format: CSV, Excel (.xlsx, .xls) - Max 5MB</div>
+                    </div>
+
+                    <div id="excelPreviewContainer" class="d-none">
+                        <label class="form-label fw-bold">Preview Data (Max 10 rows)</label>
+                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th>Nama</th>
+                                        <th>Kategori</th>
+                                        <th>Harga</th>
+                                        <th>Stok</th>
+                                        <th>Min Order</th>
+                                        <th>Deskripsi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="excelPreviewBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="small text-muted mt-2" id="excelSummary"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-success" id="btnImportExcelConfirm" disabled>
+                        <i class="bi bi-cloud-upload me-1"></i>Import <span id="importCount">0</span> Produk
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Integration Modal -->
+    <div class="modal fade" id="apiIntegrationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary bg-opacity-10">
+                    <h5 class="modal-title"><i class="bi bi-cloud-arrow-up me-2"></i>API Integration - Sync Produk</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>API Integration:</strong> Sinkronisasi produk dari sistem external (ERP, POS, dll)
+                        secara real-time.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">API Endpoint URL</label>
+                        <input type="text" class="form-control" id="inputAPIEndpoint"
+                            placeholder="https://api.example.com/products" value="https://demo-api.dolfin.id/products">
+                        <div class="form-text">Endpoint untuk fetch data produk (JSON format)</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">API Key / Token</label>
+                        <input type="password" class="form-control" id="inputAPIKey"
+                            placeholder="Bearer token atau API key" value="demo_key_12345">
+                        <div class="form-text">Authentication token untuk akses API</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkAutoSync" checked>
+                            <label class="form-check-label" for="chkAutoSync">
+                                <strong>Auto-sync</strong> (Update otomatis setiap 1 jam)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="apiSyncResult" class="d-none">
+                        <hr>
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle me-1"></i>
+                            <strong>Sync Berhasil!</strong> <span id="apiSyncCount">0</span> produk ditemukan dari API.
+                        </div>
+                        <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th>Nama</th>
+                                        <th>Kategori</th>
+                                        <th>Harga</th>
+                                        <th>Stok</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="apiSyncBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="apiSyncLoading" class="d-none text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="mt-2 text-muted">Fetching data from API...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnTestAPIConnection">
+                        <i class="bi bi-arrow-repeat me-1"></i>Test & Sync
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnImportAPIConfirm" disabled>
+                        <i class="bi bi-cloud-download me-1"></i>Import <span id="apiImportCount">0</span> Produk
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+    <script>
+        // Init Sidebar
+        new SidebarSystem('distributor', 'inventory').render();
+
+        // =========================
+        // AUTH & STORAGE
+        // =========================
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=distributor";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        const LS_PRODUCTS = "dolfin_distributor_products";
+
+        function loadProducts() {
+            try {
+                const data = localStorage.getItem(LS_PRODUCTS);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveProducts(products) {
+            localStorage.setItem(LS_PRODUCTS, JSON.stringify(products));
+        }
+
+        function fmtMoney(n) {
+            return "Rp " + (n || 0).toLocaleString("id-ID");
+        }
+
+        // =========================
+        // RENDER PRODUCTS
+        // =========================
+        let products = loadProducts();
+        let editingId = null;
+
+        function renderSummary() {
+            const total = products.length;
+            const active = products.filter(p => p.active).length;
+            const lowStock = products.filter(p => p.stock < 20).length;
+            const totalVal = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
+
+            document.getElementById('totalProducts').textContent = total;
+            document.getElementById('activeProducts').textContent = active;
+            document.getElementById('lowStockProducts').textContent = lowStock;
+            document.getElementById('totalValue').textContent = fmtMoney(totalVal);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('productTableBody');
+            const search = document.getElementById('searchProduct').value.toLowerCase();
+            const category = document.getElementById('filterCategory').value;
+
+            let filtered = products.filter(p => {
+                const matchSearch = p.sku.toLowerCase().includes(search) || p.name.toLowerCase().includes(search);
+                const matchCategory = !category || p.category === category;
+                return matchSearch && matchCategory;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Tidak ada produk yang sesuai filter.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(p => {
+                const stockBadge = p.stock < 20 ? 'badge-stock-low' : 'badge-stock-ok';
+                const statusBadge = p.active ? 'bg-success' : 'bg-secondary';
+                const statusText = p.active ? 'Active' : 'Inactive';
+
+                return `
+                    <tr>
+                        <td><span class="badge bg-primary">${p.sku}</span></td>
+                        <td>
+                            <div class="fw-semibold">${p.name}</div>
+                            ${p.description ? `<div class="small text-muted">${p.description}</div>` : ''}
+                        </td>
+                        <td><span class="badge bg-info text-dark">${p.category}</span></td>
+                        <td class="text-end fw-semibold">${fmtMoney(p.price)}</td>
+                        <td class="text-center">
+                            <span class="badge ${stockBadge}">${p.stock}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge ${statusBadge}">${statusText}</span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editProduct('${p.id}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${p.id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function render() {
+            renderSummary();
+            renderTable();
+        }
+
+        // =========================
+        // CRUD OPERATIONS
+        // =========================
+        document.getElementById('btnAddProduct').addEventListener('click', () => {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Tambah Produk Baru';
+            document.getElementById('productForm').reset();
+            document.getElementById('inputActive').checked = true;
+            new bootstrap.Modal(document.getElementById('productModal')).show();
+        });
+
+        // Manual input (same as btnAddProduct)
+        document.getElementById('btnAddManual').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('btnAddProduct').click();
+        });
+
+        // Excel/CSV Upload
+        document.getElementById('btnImportExcel').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('fileExcel').value = '';
+            document.getElementById('excelPreviewContainer').classList.add('d-none');
+            document.getElementById('btnImportExcelConfirm').disabled = true;
+            new bootstrap.Modal(document.getElementById('excelUploadModal')).show();
+        });
+
+        // API Integration Info
+        let apiSyncedData = [];
+        document.getElementById('btnAPIIntegration').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('apiSyncResult').classList.add('d-none');
+            document.getElementById('apiSyncLoading').classList.add('d-none');
+            document.getElementById('btnImportAPIConfirm').disabled = true;
+            new bootstrap.Modal(document.getElementById('apiIntegrationModal')).show();
+        });
+
+        // Test & Sync API
+        document.getElementById('btnTestAPIConnection').addEventListener('click', () => {
+            const endpoint = document.getElementById('inputAPIEndpoint').value;
+            const apiKey = document.getElementById('inputAPIKey').value;
+
+            if (!endpoint || !apiKey) {
+                alert('Harap isi API Endpoint dan API Key!');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('apiSyncResult').classList.add('d-none');
+            document.getElementById('apiSyncLoading').classList.remove('d-none');
+            document.getElementById('btnImportAPIConfirm').disabled = true;
+
+            // Simulate API fetch (2 seconds delay)
+            setTimeout(() => {
+                // Mock API response
+                apiSyncedData = [
+                    { sku: 'API-001', name: 'Dancow 1+ Vanilla 800g', category: 'Baby Care', price: 112000, stock: 60, minOrder: 6, description: 'Susu pertumbuhan anak 1-3 tahun' },
+                    { sku: 'API-002', name: 'MamyPoko Pants L 30', category: 'Baby Care', price: 65000, stock: 80, minOrder: 4, description: 'Popok celana ukuran L' },
+                    { sku: 'API-003', name: 'Sweety Bronze Pants XL 26', category: 'Baby Care', price: 59000, stock: 100, minOrder: 4, description: 'Popok celana Extra Large' },
+                    { sku: 'API-004', name: 'Minyak Telon My Baby 60ml', category: 'Baby Care', price: 18000, stock: 150, minOrder: 12, description: 'Minyak telon hangat untuk bayi' },
+                    { sku: 'API-005', name: 'Pediasure Vanilla 850g', category: 'Baby Care', price: 320000, stock: 40, minOrder: 2, description: 'Susu formula lengkap nutrisi' }
+                ];
+
+                // Render preview
+                const tbody = document.getElementById('apiSyncBody');
+                tbody.innerHTML = apiSyncedData.map(p => `
+                    <tr>
+                        <td><span class="badge bg-info">${p.sku}</span></td>
+                        <td>${p.name}</td>
+                        <td>${p.category}</td>
+                        <td>${fmtMoney(p.price)}</td>
+                        <td>${p.stock}</td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('apiSyncCount').textContent = apiSyncedData.length;
+                document.getElementById('apiImportCount').textContent = apiSyncedData.length;
+
+                // Hide loading, show result
+                document.getElementById('apiSyncLoading').classList.add('d-none');
+                document.getElementById('apiSyncResult').classList.remove('d-none');
+                document.getElementById('btnImportAPIConfirm').disabled = false;
+            }, 2000);
+        });
+
+        // Import from API
+        document.getElementById('btnImportAPIConfirm').addEventListener('click', () => {
+            if (apiSyncedData.length === 0) return;
+
+            let imported = 0;
+            let skipped = 0;
+            let updated = 0;
+
+            apiSyncedData.forEach(p => {
+                const existing = products.find(prod => prod.sku === p.sku);
+
+                if (existing) {
+                    // Update existing product (sync)
+                    existing.name = p.name;
+                    existing.category = p.category;
+                    existing.price = p.price;
+                    existing.stock = p.stock;
+                    existing.minOrder = p.minOrder;
+                    existing.description = p.description;
+                    updated++;
+                } else {
+                    // Create new product
+                    const newProduct = {
+                        id: 'PROD-API-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+                        sku: p.sku,
+                        name: p.name,
+                        category: p.category,
+                        price: p.price,
+                        stock: p.stock,
+                        minOrder: p.minOrder,
+                        description: p.description,
+                        active: true,
+                        createdAt: new Date().toISOString(),
+                        createdBy: 'API Sync - ' + user.email
+                    };
+                    products.push(newProduct);
+                    imported++;
+                }
+            });
+
+            saveProducts(products);
+            render();
+
+            bootstrap.Modal.getInstance(document.getElementById('apiIntegrationModal')).hide();
+            alert(`✅ API Sync Berhasil!\n\n${imported} produk baru ditambahkan\n${updated} produk diupdate\n${skipped} produk diskip`);
+        });
+
+        // Excel file handler
+        let parsedExcelData = [];
+        document.getElementById('fileExcel').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File terlalu besar! Maksimal 5MB');
+                e.target.value = '';
+                return;
+            }
+
+            // Parse CSV only (for demo - real implementation would use library like SheetJS for Excel)
+            if (file.name.endsWith('.csv')) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const text = e.target.result;
+                    parseCSV(text);
+                };
+                reader.readAsText(file);
+            } else {
+                alert('Demo: Gunakan file CSV. Untuk Excel (.xlsx), perlu library SheetJS di production.');
+            }
+        });
+
+        function parseCSV(text) {
+            const lines = text.split('\n').filter(l => l.trim());
+            if (lines.length < 2) {
+                alert('File CSV kosong!');
+                return;
+            }
+
+            // Skip header (first line)
+            const dataLines = lines.slice(1);
+            parsedExcelData = dataLines.map(line => {
+                const parts = line.split(',').map(p => p.trim().replace(/"/g, ''));
+                return {
+                    sku: parts[0] || '',
+                    name: parts[1] || '',
+                    category: parts[2] || 'Food & Beverage',
+                    price: parseInt(parts[3]) || 0,
+                    stock: parseInt(parts[4]) || 0,
+                    minOrder: parseInt(parts[5]) || 1,
+                    description: parts[6] || ''
+                };
+            }).filter(p => p.sku && p.name); // Filter out invalid rows
+
+            // Preview
+            const previewBody = document.getElementById('excelPreviewBody');
+            previewBody.innerHTML = parsedExcelData.slice(0, 10).map(p => `
+                <tr>
+                    <td>${p.sku}</td>
+                    <td>${p.name}</td>
+                    <td>${p.category}</td>
+                    <td>${fmtMoney(p.price)}</td>
+                    <td>${p.stock}</td>
+                    <td>${p.minOrder}</td>
+                    <td class="small">${p.description}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('excelPreviewContainer').classList.remove('d-none');
+            document.getElementById('excelSummary').textContent =
+                `Total ${parsedExcelData.length} produk valid. ${parsedExcelData.length > 10 ? 'Menampilkan 10 pertama.' : ''}`;
+            document.getElementById('importCount').textContent = parsedExcelData.length;
+            document.getElementById('btnImportExcelConfirm').disabled = parsedExcelData.length === 0;
+        }
+
+        // Download CSV Template
+        document.getElementById('btnDownloadTemplate').addEventListener('click', (e) => {
+            e.preventDefault();
+            const csvContent = `SKU,Nama,Kategori,Harga,Stok,Min Order,Deskripsi
+BRG-101,Dancow 1+ Vanilla 800g,Baby Care,112000,60,6,Susu pertumbuhan anak 1-3 tahun
+BRG-102,MamyPoko Pants L 30,Baby Care,65000,80,4,Popok celana ukuran L`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'template_produk_dolfin.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Import Excel Confirm
+        document.getElementById('btnImportExcelConfirm').addEventListener('click', () => {
+            if (parsedExcelData.length === 0) return;
+
+            let imported = 0;
+            let skipped = 0;
+
+            parsedExcelData.forEach(p => {
+                // Check duplicate SKU
+                if (products.find(existing => existing.sku === p.sku)) {
+                    skipped++;
+                    return;
+                }
+
+                const newProduct = {
+                    id: 'PROD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+                    sku: p.sku,
+                    name: p.name,
+                    category: p.category,
+                    price: p.price,
+                    stock: p.stock,
+                    minOrder: p.minOrder,
+                    description: p.description,
+                    active: true,
+                    createdAt: new Date().toISOString(),
+                    createdBy: user.email
+                };
+                products.push(newProduct);
+                imported++;
+            });
+
+            saveProducts(products);
+            render();
+
+            bootstrap.Modal.getInstance(document.getElementById('excelUploadModal')).hide();
+            alert(`✅ Import Berhasil!\n\n${imported} produk diimport\n${skipped} produk diskip (SKU duplikat)`);
+        });
+
+        document.getElementById('btnSaveProduct').addEventListener('click', () => {
+            const sku = document.getElementById('inputSKU').value.trim();
+            const name = document.getElementById('inputName').value.trim();
+            const category = document.getElementById('inputCategory').value;
+            const price = parseInt(document.getElementById('inputPrice').value) || 0;
+            const stock = parseInt(document.getElementById('inputStock').value) || 0;
+            const minOrder = parseInt(document.getElementById('inputMinOrder').value) || 1;
+            const description = document.getElementById('inputDesc').value.trim();
+            const active = document.getElementById('inputActive').checked;
+
+            if (!sku || !name || !category || price <= 0) {
+                alert('Harap isi semua field yang wajib (*)');
+                return;
+            }
+
+            // Check unique SKU
+            const existingSKU = products.find(p => p.sku === sku && p.id !== editingId);
+            if (existingSKU) {
+                alert(`SKU "${sku}" sudah digunakan! Gunakan SKU lain.`);
+                return;
+            }
+
+            if (editingId) {
+                // Edit existing
+                const index = products.findIndex(p => p.id === editingId);
+                products[index] = {
+                    ...products[index],
+                    sku, name, category, price, stock, minOrder, description, active
+                };
+            } else {
+                // Add new
+                const newProduct = {
+                    id: 'PROD-' + Date.now(),
+                    sku, name, category, price, stock, minOrder, description, active,
+                    createdAt: new Date().toISOString(),
+                    createdBy: user.email
+                };
+                products.push(newProduct);
+            }
+
+            saveProducts(products);
+            bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+            render();
+
+            alert(`✅ Produk "${name}" berhasil ${editingId ? 'diupdate' : 'ditambahkan'}!`);
+        });
+
+        window.editProduct = function (id) {
+            editingId = id;
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Produk';
+            document.getElementById('inputSKU').value = product.sku;
+            document.getElementById('inputName').value = product.name;
+            document.getElementById('inputCategory').value = product.category;
+            document.getElementById('inputPrice').value = product.price;
+            document.getElementById('inputStock').value = product.stock;
+            document.getElementById('inputMinOrder').value = product.minOrder || 1;
+            document.getElementById('inputDesc').value = product.description || '';
+            document.getElementById('inputActive').checked = product.active;
+
+            new bootstrap.Modal(document.getElementById('productModal')).show();
+        };
+
+        window.deleteProduct = function (id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            if (!confirm(`Hapus produk "${product.name}"?\n\nProduk akan dihapus permanen.`)) return;
+
+            products = products.filter(p => p.id !== id);
+            saveProducts(products);
+            render();
+
+            alert(`✅ Produk "${product.name}" berhasil dihapus.`);
+        };
+
+        // Search & Filter
+        document.getElementById('searchProduct').addEventListener('input', renderTable);
+        document.getElementById('filterCategory').addEventListener('change', renderTable);
+
+        // Init
+        render();
+
+        // Seed demo data if empty or small (legacy default)
+        if (products.length <= 10) {
+            products = [
+                // EXISTING (Preserved for compatibility)
+                { id: 'PROD-1', sku: 'BRG-001', name: 'SGM Eksplor 1+ Madu 900g', category: 'Food & Beverage', price: 105000, stock: 150, minOrder: 6, description: 'Susu formula untuk anak 1-3 tahun', active: true, createdAt: '2026-01-01', createdBy: user.email, distributor: 'PT Mitra Sehat Jakarta', region: 'Jakarta' },
+                { id: 'PROD-2', sku: 'BRG-002', name: 'Pampers Premium Care S', category: 'Baby Care', price: 95000, stock: 50, minOrder: 4, description: 'Popok bayi ukuran S (isi 50)', active: true, createdAt: '2026-01-01', createdBy: user.email, distributor: 'CV Anugrah Baby Bandung', region: 'Bandung' },
+                { id: 'PROD-3', sku: 'BRG-003', name: 'Zwitsal Baby Bath Natural 200ml', category: 'Baby Care', price: 21000, stock: 100, minOrder: 12, description: 'Sabun mandi bayi dengan natural ingredient', active: true, createdAt: '2026-01-01', createdBy: user.email, distributor: 'PT Mitra Sehat Jakarta', region: 'Jakarta' },
+                { id: 'PROD-4', sku: 'BRG-004', name: 'Milna Biskuit Bayi 6+ Bulan', category: 'Food & Beverage', price: 18500, stock: 80, minOrder: 24, description: 'Biskuit bayi rasa original', active: true, createdAt: '2026-01-01', createdBy: user.email, distributor: 'Toko Grosir Surabaya Jaya', region: 'Surabaya' },
+                { id: 'PROD-5', sku: 'BRG-005', name: 'Cussons Baby Powder 350g', category: 'Baby Care', price: 15500, stock: 120, minOrder: 12, description: 'Bedak bayi mild & gentle', active: true, createdAt: '2026-01-01', createdBy: user.email, distributor: 'CV Anugrah Baby Bandung', region: 'Bandung' },
+
+                // NEW PRODUCTS (Baby Types - Mix Categories)
+                // Food & Beverage
+                { id: 'PROD-6', sku: 'BRG-006', name: 'Dancow 1+ Vanilla 800g', category: 'Food & Beverage', price: 112000, stock: 80, minOrder: 6, description: 'Susu pertumbuhan rasa vanilla', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Sumber Nutrisi Medan', region: 'Medan' },
+                { id: 'PROD-7', sku: 'BRG-007', name: 'Nutrilon Royal 3 Vanilla 800g', category: 'Food & Beverage', price: 185000, stock: 40, minOrder: 3, description: 'Susu pertumbuhan premium', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Mitra Sehat Jakarta', region: 'Jakarta' },
+                { id: 'PROD-8', sku: 'BRG-008', name: 'Bebelac 3 Madu 800g', category: 'Food & Beverage', price: 145000, stock: 60, minOrder: 6, description: 'Susu bubuk rasa madu', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Distributor Sehat Semarang', region: 'Semarang' },
+                { id: 'PROD-9', sku: 'BRG-009', name: 'Promina Bubur Bayi Ayam 120g', category: 'Food & Beverage', price: 14500, stock: 200, minOrder: 12, description: 'MPASI bubuk instan rasa ayam', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Toko Grosir Surabaya Jaya', region: 'Surabaya' },
+                { id: 'PROD-10', sku: 'BRG-010', name: 'Cerelac Beras Merah 120g', category: 'Food & Beverage', price: 16000, stock: 150, minOrder: 12, description: 'Bubur sereal susu beras merah', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'CV Anugrah Baby Bandung', region: 'Bandung' },
+                { id: 'PROD-11', sku: 'BRG-011', name: 'Sun Bubur Susu Pisang 120g', category: 'Food & Beverage', price: 12500, stock: 180, minOrder: 24, description: 'Bubur bayi ekonomis rasa pisang', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Berkah Bayi Yogyakarta', region: 'Yogyakarta' },
+                { id: 'PROD-12', sku: 'BRG-012', name: 'Yummy Bites Rice Crackers 50g', category: 'Food & Beverage', price: 32000, stock: 100, minOrder: 10, description: 'Snack bayi rice crackers', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Mitra Sehat Jakarta', region: 'Jakarta' },
+
+                // Baby Care (Diapers & Toiletries)
+                { id: 'PROD-13', sku: 'BRG-013', name: 'MamyPoko Pants L 30', category: 'Baby Care', price: 65000, stock: 200, minOrder: 4, description: 'Popok celana hemat ukuran L', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Sumber Nutrisi Medan', region: 'Medan' },
+                { id: 'PROD-14', sku: 'BRG-014', name: 'MamyPoko Pants XL 26', category: 'Baby Care', price: 65000, stock: 180, minOrder: 4, description: 'Popok celana hemat ukuran XL', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Sumber Nutrisi Medan', region: 'Medan' },
+                { id: 'PROD-15', sku: 'BRG-015', name: 'Sweety Bronze Pants M 34', category: 'Baby Care', price: 58000, stock: 150, minOrder: 6, description: 'Popok ekstra lembut ukuran M', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Distributor Sehat Semarang', region: 'Semarang' },
+                { id: 'PROD-16', sku: 'BRG-016', name: 'Sweety Bronze Pants L 30', category: 'Baby Care', price: 58000, stock: 160, minOrder: 6, description: 'Popok ekstra lembut ukuran L', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Distributor Sehat Semarang', region: 'Semarang' },
+                { id: 'PROD-17', sku: 'BRG-017', name: 'Merries Pants Good Skin M 34', category: 'Baby Care', price: 68000, stock: 90, minOrder: 4, description: 'Popok daya serap tinggi M', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'CV Anugrah Baby Bandung', region: 'Bandung' },
+                { id: 'PROD-18', sku: 'BRG-018', name: 'Merries Pants Good Skin L 30', category: 'Baby Care', price: 68000, stock: 100, minOrder: 4, description: 'Popok daya serap tinggi L', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'CV Anugrah Baby Bandung', region: 'Bandung' },
+                { id: 'PROD-19', sku: 'BRG-019', name: 'Zwitsal Baby Shampoo 100ml', category: 'Baby Care', price: 18000, stock: 120, minOrder: 12, description: 'Sampo bayi tidak pedih di mata', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Toko Grosir Surabaya Jaya', region: 'Surabaya' },
+                { id: 'PROD-20', sku: 'BRG-020', name: 'My Baby Minyak Telon 60ml', category: 'Baby Care', price: 16500, stock: 200, minOrder: 12, description: 'Minyak telon plus eucalyptus', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Berkah Bayi Yogyakarta', region: 'Yogyakarta' },
+                { id: 'PROD-21', sku: 'BRG-021', name: 'My Baby Minyak Telon 150ml', category: 'Baby Care', price: 35000, stock: 80, minOrder: 6, description: 'Minyak telon kemasan besar', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Berkah Bayi Yogyakarta', region: 'Yogyakarta' },
+                { id: 'PROD-22', sku: 'BRG-022', name: 'Cussons Baby Oil 100ml', category: 'Baby Care', price: 19000, stock: 100, minOrder: 6, description: 'Baby oil soft & smooth', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Mitra Sehat Jakarta', region: 'Jakarta' },
+                { id: 'PROD-23', sku: 'BRG-023', name: 'Pigeon Baby Wipes 80s', category: 'Baby Care', price: 18000, stock: 250, minOrder: 12, description: 'Tisu basah bayi non-alkohol', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Toko Grosir Surabaya Jaya', region: 'Surabaya' },
+                { id: 'PROD-24', sku: 'BRG-024', name: 'Sudocrem Baby Care 60g', category: 'Baby Care', price: 65000, stock: 30, minOrder: 2, description: 'Krim ruam popok efektif', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'PT Mitra Sehat Jakarta', region: 'Jakarta' },
+
+                // Health
+                { id: 'PROD-25', sku: 'BRG-025', name: 'Tempra Paracetamol Drop 15ml', category: 'Health', price: 55000, stock: 60, minOrder: 10, description: 'Obat penurun panas bayi', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Apotek Farma Sehat Jakarta', region: 'Jakarta' },
+                { id: 'PROD-26', sku: 'BRG-026', name: 'Proris Ibuprofen Suspensi 60ml', category: 'Health', price: 28000, stock: 50, minOrder: 10, description: 'Pereda nyeri dan demam', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Apotek Farma Sehat Jakarta', region: 'Jakarta' },
+                { id: 'PROD-27', sku: 'BRG-027', name: 'ByeBye-Fever Plester Demam', category: 'Health', price: 11000, stock: 300, minOrder: 24, description: 'Plester kompres demam bayi', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'CV Medika Bandung', region: 'Bandung' },
+                { id: 'PROD-28', sku: 'BRG-028', name: 'Transpulmin Baby Balsam 20g', category: 'Health', price: 72000, stock: 40, minOrder: 3, description: 'Balsem hangat untuk dada bayi', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'CV Medika Bandung', region: 'Bandung' },
+
+                // Household
+                { id: 'PROD-29', sku: 'BRG-029', name: 'Sleek Bottle Cleanser 450ml', category: 'Household', price: 28000, stock: 120, minOrder: 6, description: 'Pembersih botol dan dot bayi', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Toko Grosir Surabaya Jaya', region: 'Surabaya' },
+                { id: 'PROD-30', sku: 'BRG-030', name: 'Cussons Baby Liquid 700ml', category: 'Household', price: 35000, stock: 80, minOrder: 6, description: 'Deterjen cair khusus baju bayi', active: true, createdAt: '2026-01-10', createdBy: user.email, distributor: 'Distributor Sehat Semarang', region: 'Semarang' }
+            ];
+            saveProducts(products);
+            render();
+        }
+    </script>
+</body>
+
+</html>

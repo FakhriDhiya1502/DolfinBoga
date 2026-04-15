@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Distributor | Allocation List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #f4f6f9; font-family: Arial, Helvetica, sans-serif; }
+        .sidebar { min-height: calc(100vh - 56px); }
+        .nav-pill { border-radius: 10px; }
+        .my-card { border: 0; }
+        .muted-xs { font-size: .82rem; color: #6c757d; }
+
+        :root {
+            --bg: #f4f6f9;
+            --card: #fff;
+            --line: #d9e0ea;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #2563eb;
+            --soft: #f8fafc;
+        }
+
+        .page {
+            padding: 16px;
+            background: white; border-radius: 10px; border: 1px solid var(--line);
+        }
+
+        .toolbar,
+        .my-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        .toolbar {
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+        }
+
+        button {
+            border: 1px solid var(--line);
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button.primary {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .my-card {
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .field input,
+        .field select {
+            padding: 8px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+        }
+
+        .table-wrap {
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid var(--line);
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            background: var(--soft);
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge-draft {
+            background: #fef08a;
+            color: #854d0e;
+        }
+
+        .badge-partial {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-complete {
+            background: #dcfce7;
+            color: #166534;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+            
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-success fw-bold"><i class="bi bi-box-seam me-2"></i>Allocation Management</h4>
+                </div>
+
+                <div class="page shadow-sm">
+                    <div class="toolbar">
+                        <div><b>Allocation List</b></div>
+                        <div>
+                            <button class="primary" onclick="window.location.href='distributor_Allocationadd.html'">+ New Allocation</button>
+                        </div>
+                    </div>
+
+                    <div class="my-card">
+                        <div class="form-grid">
+                            <div class="field"><label>Date</label><input type="date" /></div>
+                            <div class="field"><label>Slot</label><select>
+                                    <option>All Slot</option>
+                                    <option>AM</option>
+                                    <option>PM</option>
+                                </select></div>
+                            <div class="field"><label>Status</label><select>
+                                    <option>All Status</option>
+                                    <option>Draft</option>
+                                    <option>Not Full Allocated</option>
+                                    <option>Full Allocated</option>
+                                </select></div>
+                        </div>
+                    </div>
+
+                    <div class="my-card">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Allocation No</th>
+                                        <th>Date</th>
+                                        <th>Slot</th>
+                                        <th>Total Item</th>
+                                        <th>Total SO</th>
+                                        <th>Total Actual</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allocationTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center text-muted small mt-4 mb-2">
+                    © 2026 Dolfin — Distributor Portal
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+
+    <script>
+        // =========================
+        // SESSION GUARD
+        // =========================
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=distributor";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        // =========================
+        // SIDEBAR INJECTION
+        // =========================
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = new SidebarSystem("distributor", "allocation");
+            sidebar.render();
+            
+            // =========================
+            // LOAD DYNAMIC ALLOCATIONS
+            // =========================
+            const allocations = JSON.parse(localStorage.getItem('dolfin_allocations') || '[]');
+            const tbody = document.getElementById('allocationTbody');
+            if (allocations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#6b7280;padding:20px;">No allocations yet. Click + New Allocation to create one.</td></tr>';
+            } else {
+                allocations.forEach(alloc => {
+                    const badgeClass = alloc.badge || 'badge-draft';
+                    const statusLabel = alloc.status || 'DRAFT';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${alloc.id}</td>
+                        <td>${alloc.date || '-'}</td>
+                        <td>${alloc.slot || '-'}</td>
+                        <td>${alloc.itemCount ?? '-'}</td>
+                        <td>${alloc.totalQtySO ?? '-'}</td>
+                        <td>${alloc.totalAllocated ?? 0}</td>
+                        <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+                        <td><button onclick="window.location.href='distributor_allocation_detail_full.html?id=${alloc.id}'">Open</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

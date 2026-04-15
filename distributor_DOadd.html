@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Distributor | Add New Delivery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+            color: #222;
+        }
+
+        .page {
+            padding: 16px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 0;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .btn-light {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-sm {
+            padding: 7px 12px;
+            font-size: 12px;
+            border-radius: 7px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+            border: 1px solid #d9e0ea;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 14px 16px;
+            font-weight: 700;
+            background: #f8fafc;
+            border-bottom: 1px solid #d9e0ea;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            border: 1px solid #d8dde6;
+            border-radius: 8px;
+            padding: 9px 11px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        .field input,
+        .field select {
+            height: 38px;
+        }
+
+        .field textarea {
+            min-height: 38px;
+            resize: vertical;
+        }
+
+        .detail-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 980px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #edf0f5;
+            font-size: 13px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f9fafc;
+            font-size: 12px;
+            color: #555;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        td input {
+            width: 100%;
+            height: 34px;
+            border: 1px solid #d8dde6;
+            border-radius: 7px;
+            padding: 0 10px;
+            font-size: 13px;
+        }
+
+        tbody tr:hover {
+            background: #fafcff;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .tag-blue { background: #dbeafe; color: #1d4ed8; }
+        .tag-orange { background: #ffedd5; color: #c2410c; }
+        .tag-gray { background: #f3f4f6; color: #4b5563; }
+
+        .alloc-summary-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .alloc-summary-content {
+            margin-top: 14px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .summary-box {
+            border: 1px solid #e8ebf1;
+            border-radius: 10px;
+            padding: 12px;
+            background: #fafbfe;
+        }
+
+        .summary-box .label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .summary-box .value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .add-item-wrap {
+            margin-top: 14px;
+            padding-top: 12px;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .footer-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        @media (max-width: 1100px) {
+            .grid, .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 700px) {
+            .grid, .summary-grid { grid-template-columns: 1fr; }
+            .topbar, .footer { flex-direction: column; align-items: stretch; }
+            .footer-right { width: 100%; }
+            .footer-right .btn, .topbar .btn { width: 100%; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main Menu -->
+            <div class="col-lg-10">
+                <div class="page bg-white shadow-sm rounded-3 border">
+
+        <div class="topbar">
+            <h1><i class="bi bi-file-earmark-plus me-2 text-success"></i>Add New Delivery</h1>
+            <button class="btn btn-secondary" onclick="window.location.href='distributor_DO.html'">Back</button>
+        </div>
+
+        <!-- Delivery Information -->
+        <div class="card">
+            <div class="card-header">Delivery Information</div>
+            <div class="card-body">
+                <div class="grid">
+                    <div class="field">
+                        <label>Delivery No</label>
+                        <input type="text" id="doNo" value="AUTO" readonly>
+                    </div>
+
+                    <div class="field">
+                        <label>Delivery Date</label>
+                        <input type="date" id="deliveryDate">
+                    </div>
+
+                    <div class="field">
+                        <label>Delivery Type</label>
+                        <select id="deliveryType">
+                            <option value="Allocation" selected>Allocation</option>
+                            <option value="Manual">Manual</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Customer</label>
+                        <select id="selCustomer">
+                            <option value="">-- Select Customer --</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Store</label>
+                        <select id="selStore">
+                            <option value="">-- Select Store --</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Slot</label>
+                        <select id="selSlot">
+                            <option value="AM" selected>AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+
+                    <div class="field" style="grid-column: span 2;">
+                        <label>Remarks</label>
+                        <input type="text" id="remarks" placeholder="Optional notes">
+                    </div>
+                </div>
+                <div id="loadAllocationWrap" style="margin-top: 16px; border-top: 1px solid #d9e0ea; padding-top: 16px;">
+                    <button class="btn btn-primary btn-sm" id="btnLoadAllocation">Load Allocation</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="allocationResults" style="display: none;">
+
+        <!-- Allocation Summary -->
+        <div class="card" id="allocSummaryCard">
+            <div class="card-body">
+                <div class="alloc-summary-toggle" onclick="toggleAllocSummary()">
+                    <div style="font-weight:700;">Allocation Summary</div>
+                    <div id="allocChevron">▼</div>
+                </div>
+
+                <div class="alloc-summary-content" id="allocSummaryContent">
+                    <div class="summary-grid">
+                        <div class="summary-box">
+                            <div class="label">Allocation No</div>
+                            <div class="value" id="allocSumNo">-</div>
+                        </div>
+                        <div class="summary-box">
+                            <div class="label">Allocation Date</div>
+                            <div class="value" id="allocSumDate">-</div>
+                        </div>
+                        <div class="summary-box">
+                            <div class="label">Slot</div>
+                            <div class="value" id="allocSumSlot">-</div>
+                        </div>
+                        <div class="summary-box">
+                            <div class="label">Status</div>
+                            <div class="value"><span class="tag tag-blue" id="allocSumStatus">-</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivery Detail -->
+        <div class="card">
+            <div class="card-header">Delivery Detail</div>
+            <div class="card-body">
+
+                <div class="detail-topbar">
+                    <div></div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:130px;">Item Code</th>
+                                <th>Item Name</th>
+                                <th style="width:90px;">Qty SO</th>
+                                <th style="width:110px;">Qty Alloc</th>
+                                <th style="width:130px;">Line Status</th>
+                                <th style="width:150px;">Notes</th>
+                                <th style="width:80px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailTbody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="add-item-wrap">
+                    <button class="btn btn-secondary" id="btnAddItem">+ Add Item</button>
+                </div>
+
+                <div class="footer">
+                    <div>
+                        <button class="btn btn-secondary" id="btnSaveDraftDO">Save Draft</button>
+                    </div>
+                    <div class="footer-right">
+                        <button class="btn btn-success" id="btnCreateDO">Create Delivery</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+        <script>
+            // ===== DATA HELPERS =====
+            function getSoList() {
+                return JSON.parse(localStorage.getItem('dolfin_so_list') || '[]');
+            }
+
+            /**
+             * Scan all allocation detail records to collect every
+             * {customer, store} pair that has been allocated.
+             * Falls back to dolfin_so_list so nothing is lost.
+             */
+            function getAllocCustomerStorePairs() {
+                const pairs = []; // [{customer, store}, ...]
+
+                // 1) From allocation detail records
+                const allocList = JSON.parse(localStorage.getItem('dolfin_allocations') || '[]');
+                allocList.forEach(alloc => {
+                    const data = JSON.parse(localStorage.getItem('dolfin_alloc_' + alloc.id) || 'null');
+                    if (!data) return;
+                    (data.items || []).forEach(item => {
+                        const rows = item.savedAllocations || item.rows || [];
+                        rows.forEach(r => {
+                            if (r.customer && r.store) {
+                                pairs.push({ customer: r.customer, store: r.store });
+                            }
+                        });
+                    });
+                });
+
+                // 2) Fallback: dolfin_so_list
+                getSoList().forEach(so => {
+                    const c = so.customerName || so.storeName || '';
+                    const s = so.storeName || so.storeCode || '';
+                    if (c) pairs.push({ customer: c, store: s || c });
+                });
+
+                return pairs;
+            }
+
+            function getUniqueCustomers() {
+                const set = new Set();
+                getAllocCustomerStorePairs().forEach(p => {
+                    if (p.customer) set.add(p.customer);
+                });
+                return [...set].sort();
+            }
+
+            function getStoresForCustomer(customer) {
+                const set = new Set();
+                getAllocCustomerStorePairs().forEach(p => {
+                    if (p.customer === customer && p.store) set.add(p.store);
+                });
+                return [...set].sort();
+            }
+
+            function generateDoId() {
+                const doList = JSON.parse(localStorage.getItem('dolfin_do_list') || '[]');
+                const now = new Date();
+                const ym = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0');
+                const seq = (doList.length + 1).toString().padStart(4, '0');
+                return `DO-${ym}-${seq}`;
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '-';
+                const d = new Date(dateStr + 'T00:00:00');
+                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                return `${String(d.getDate()).padStart(2,'0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
+            }
+
+            // ===== DROPDOWNS =====
+            const selCustomer = document.getElementById('selCustomer');
+            const selStore = document.getElementById('selStore');
+
+            getUniqueCustomers().forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                selCustomer.appendChild(opt);
+            });
+
+            selCustomer.addEventListener('change', function () {
+                selStore.innerHTML = '<option value="">-- Select Store --</option>';
+                if (!this.value) return;
+                getStoresForCustomer(this.value).forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s; opt.textContent = s;
+                    selStore.appendChild(opt);
+                });
+                // Reset results when customer changes
+                document.getElementById('allocationResults').style.display = 'none';
+                document.getElementById('detailTbody').innerHTML = '';
+                loadedAllocId = null; loadedAllocData = null;
+            });
+
+            // ===== DELIVERY TYPE TOGGLE =====
+            document.getElementById('deliveryType').addEventListener('change', function () {
+                const isManual = this.value === 'Manual';
+                document.getElementById('loadAllocationWrap').style.display = isManual ? 'none' : 'block';
+                document.getElementById('allocSummaryCard').style.display = isManual ? 'none' : 'block';
+                if (isManual) {
+                    document.getElementById('allocationResults').style.display = 'block';
+                } else {
+                    document.getElementById('allocationResults').style.display = 'none';
+                }
+                document.getElementById('detailTbody').innerHTML = '';
+                loadedAllocId = null; loadedAllocData = null;
+            });
+
+            // ===== LOAD ALLOCATION =====
+            let loadedAllocId = null;
+            let loadedAllocData = null;
+
+            document.getElementById('btnLoadAllocation').addEventListener('click', function () {
+                const customer = selCustomer.value;
+                const store = selStore.value;
+                if (!customer || !store) {
+                    alert('Please select Customer and Store first.');
+                    return;
+                }
+
+                const allocList = JSON.parse(localStorage.getItem('dolfin_allocations') || '[]');
+                const confirmed = allocList.filter(a => a.status === 'CONFIRMED');
+                if (confirmed.length === 0) {
+                    alert('No confirmed allocations found. Please confirm an allocation first.');
+                    return;
+                }
+
+                let foundAlloc = null, foundAllocData = null, foundItems = [];
+
+                for (const alloc of confirmed) {
+                    const data = JSON.parse(localStorage.getItem('dolfin_alloc_' + alloc.id) || 'null');
+                    if (!data) continue;
+
+                    const matchItems = [];
+                    for (const item of (data.items || [])) {
+                        const rows = item.savedAllocations || item.rows || [];
+                        const matching = rows.filter(r => r.customer === customer && r.store === store);
+                        if (!matching.length) continue;
+                        const qtySO = matching.reduce((s, r) => s + (r.qtySO || 0), 0);
+                        const qtyAlloc = matching.reduce((s, r) => s + (r.qtyAllocated || r.qtySO || 0), 0);
+                        if (qtyAlloc > 0) matchItems.push({ itemCode: item.itemCode, itemName: item.itemName, qtySO, qtyAlloc });
+                    }
+
+                    if (matchItems.length > 0) {
+                        foundAlloc = alloc; foundAllocData = data; foundItems = matchItems;
+                        break;
+                    }
+                }
+
+                if (!foundAlloc) {
+                    alert('No confirmed allocation found with items allocated to this customer and store.');
+                    return;
+                }
+
+                loadedAllocId = foundAlloc.id;
+                loadedAllocData = foundAllocData;
+
+                document.getElementById('allocSumNo').textContent = foundAlloc.id;
+                document.getElementById('allocSumDate').textContent = formatDate(foundAllocData.allocationDate) || foundAlloc.date || '-';
+                document.getElementById('allocSumSlot').textContent = foundAlloc.slot || '-';
+                document.getElementById('allocSumStatus').textContent = 'CONFIRMED';
+
+                const tbody = document.getElementById('detailTbody');
+                tbody.innerHTML = '';
+                foundItems.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.itemCode}</td>
+                        <td>${item.itemName}</td>
+                        <td>${item.qtySO}</td>
+                        <td>${item.qtyAlloc}</td>
+                        <td><span class="tag tag-blue">Match</span></td>
+                        <td><input type="text" placeholder="Notes" style="height:32px;border:1px solid #d8dde6;border-radius:6px;padding:0 8px;font-size:12px;width:100%;"></td>
+                        <td><button class="btn btn-light btn-sm" onclick="this.closest('tr').remove()">Remove</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('allocationResults').style.display = 'block';
+            });
+
+            // ===== ADD MANUAL ITEM =====
+            document.getElementById('btnAddItem').addEventListener('click', function () {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" placeholder="Item code" style="height:32px;border:1px solid #d8dde6;border-radius:6px;padding:0 8px;font-size:13px;width:100%;"></td>
+                    <td><input type="text" placeholder="Item name" style="height:32px;border:1px solid #d8dde6;border-radius:6px;padding:0 8px;font-size:13px;width:100%;"></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><span class="tag tag-gray">Manual</span></td>
+                    <td><input type="text" placeholder="Notes" style="height:32px;border:1px solid #d8dde6;border-radius:6px;padding:0 8px;font-size:12px;width:100%;"></td>
+                    <td><button class="btn btn-light btn-sm" onclick="this.closest('tr').remove()">Remove</button></td>
+                `;
+                document.getElementById('detailTbody').appendChild(tr);
+                document.getElementById('allocationResults').style.display = 'block';
+            });
+
+            // ===== COLLECT + SAVE =====
+            function collectLines() {
+                const lines = [];
+                document.querySelectorAll('#detailTbody tr').forEach(tr => {
+                    const cells = tr.cells;
+                    if (!cells || cells.length < 5) return;
+                    const itemCode = cells[0].querySelector('input') ? cells[0].querySelector('input').value.trim() : cells[0].textContent.trim();
+                    const itemName = cells[1].querySelector('input') ? cells[1].querySelector('input').value.trim() : cells[1].textContent.trim();
+                    const qtySO = parseInt(cells[2].textContent.trim(), 10) || 0;
+                    const qtyAlloc = parseInt(cells[3].textContent.trim(), 10) || 0;
+                    const lineStatus = cells[4].textContent.trim();
+                    const notes = cells[5].querySelector('input')?.value?.trim() || '';
+                    if (itemCode) lines.push({ itemCode, itemName, qtySO, qtyAlloc, lineStatus, notes });
+                });
+                return lines;
+            }
+
+            function saveDO(status) {
+                const customer = selCustomer.value;
+                const store = selStore.value;
+                if (!customer || !store) { alert('Please select Customer and Store.'); return; }
+
+                const lines = collectLines();
+                if (lines.length === 0) { alert('Please add at least one item.'); return; }
+
+                const deliveryDate = document.getElementById('deliveryDate').value;
+                if (!deliveryDate) { alert('Please select Delivery Date.'); return; }
+
+                const doId = generateDoId();
+                const totalQtyAlloc = lines.reduce((s, l) => s + l.qtyAlloc, 0);
+                const createdBy = (JSON.parse(localStorage.getItem('dolfin_user') || '{}'))?.name || '-';
+
+                const record = {
+                    id: doId,
+                    deliveryDate,
+                    deliveryType: document.getElementById('deliveryType').value,
+                    customer,
+                    store,
+                    slot: document.getElementById('selSlot').value,
+                    remarks: document.getElementById('remarks').value,
+                    allocId: loadedAllocId || null,
+                    allocDate: loadedAllocData?.allocationDate || '',
+                    status,
+                    itemCount: lines.length,
+                    totalQtyAlloc,
+                    createdBy,
+                    lines
+                };
+
+                localStorage.setItem('dolfin_do_' + doId, JSON.stringify(record));
+
+                let doList = JSON.parse(localStorage.getItem('dolfin_do_list') || '[]');
+                doList.unshift({
+                    id: doId, deliveryDate,
+                    deliveryType: record.deliveryType,
+                    customer, store,
+                    slot: record.slot,
+                    allocId: record.allocId,
+                    allocDate: record.allocDate,
+                    status, itemCount: lines.length,
+                    totalQtyAlloc, createdBy
+                });
+                localStorage.setItem('dolfin_do_list', JSON.stringify(doList));
+
+                alert(`DO ${doId} ${status === 'DRAFT' ? 'saved as draft' : 'created'} successfully.`);
+                window.location.href = 'distributor_DO.html';
+            }
+
+            document.getElementById('btnSaveDraftDO').addEventListener('click', () => saveDO('DRAFT'));
+            document.getElementById('btnCreateDO').addEventListener('click', () => saveDO('OPEN'));
+
+            function toggleAllocSummary() {
+                const content = document.getElementById('allocSummaryContent');
+                const chevron = document.getElementById('allocChevron');
+                const isHidden = content.style.display === 'none';
+                content.style.display = isHidden ? 'block' : 'none';
+                chevron.textContent = isHidden ? '▼' : '▶';
+            }
+
+            // Set default delivery date to today
+            document.getElementById('deliveryDate').value = new Date().toISOString().slice(0, 10);
+        </script>
+                </div>
+                <!-- Footer -->
+                <div class="text-center text-muted small mt-4 mb-2">
+                    © 2026 Dolfin — Distributor Portal
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+
+    <script>
+        // =========================
+        // SESSION GUARD
+        // =========================
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=distributor";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        // =========================
+        // SIDEBAR INJECTION
+        // =========================
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = new SidebarSystem("distributor", "deliveryorder");
+            sidebar.render();
+        });
+    </script>
+</body>
+
+</html>

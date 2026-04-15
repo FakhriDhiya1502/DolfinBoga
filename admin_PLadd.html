@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Add Price List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: #1f4e79;
+            color: #fff;
+            padding: 14px 20px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .page {
+            max-width: 1400px;
+            margin: 18px auto 32px;
+            padding: 0 16px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #111827;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn.primary {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+
+        .btn.success {
+            background: #15803d;
+            color: #fff;
+            border-color: #15803d;
+        }
+
+        .btn.warn {
+            background: #b45309;
+            color: #fff;
+            border-color: #b45309;
+        }
+
+        .btn.gray {
+            background: #475569;
+            color: #fff;
+            border-color: #475569;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #dbe3ef;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+
+        .card-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 700;
+            background: #f8fafc;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 12px;
+        }
+
+        .col-1 {
+            grid-column: span 1;
+        }
+
+        .col-2 {
+            grid-column: span 2;
+        }
+
+        .col-3 {
+            grid-column: span 3;
+        }
+
+        .col-4 {
+            grid-column: span 4;
+        }
+
+        .col-5 {
+            grid-column: span 5;
+        }
+
+        .col-6 {
+            grid-column: span 6;
+        }
+
+        .col-8 {
+            grid-column: span 8;
+        }
+
+        .col-12 {
+            grid-column: span 12;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 9px 10px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .field textarea {
+            min-height: 78px;
+            resize: vertical;
+        }
+
+        .readonly {
+            background: #f1f5f9 !important;
+            color: #475569;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 9px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .tab.active {
+            background: #dbeafe;
+            border-color: #93c5fd;
+            color: #1d4ed8;
+        }
+
+        .info-box,
+        .warning-box,
+        .error-box {
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #93c5fd;
+            color: #1d4ed8;
+        }
+
+        .warning-box {
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            color: #9a3412;
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #b91c1c;
+        }
+
+        .hint {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .table-wrap {
+            overflow: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        th,
+        td {
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            font-size: 13px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f8fafc;
+            white-space: nowrap;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status.draft {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .small {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .section-note {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .summary-box {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 14px;
+            height: 100%;
+        }
+
+        .summary-box h4 {
+            margin: 0 0 10px;
+            font-size: 14px;
+        }
+
+        .summary-box ul {
+            margin: 0;
+            padding-left: 18px;
+            line-height: 1.8;
+            font-size: 13px;
+        }
+
+        @media (max-width: 980px) {
+            .grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+
+            .col-1,
+            .col-2,
+            .col-3,
+            .col-4,
+            .col-5,
+            .col-6,
+            .col-8,
+            .col-12 {
+                grid-column: span 1;
+            }
+        }
+
+        /* Fix Bootstrap collision for custom grid */
+        .grid [class*="col-"],
+        .grid [class^="col-"] {
+            width: auto !important;
+            flex: none !important;
+            max-width: none !important;
+            padding: 0 !important;
+        }
+    </style>
+</head>
+
+<body style="background: #f4f6f9;">
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="admin_dashboard.html">
+                <i class="bi bi-shield-lock-fill me-2"></i>Dolfin Admin
+            </a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Platform Management</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">Admin</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="index.html">Switch Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 fw-bold text-success"><i class="bi bi-tag-fill me-2"></i>Price List Management - Add
+                    </h4>
+                </div>
+                <!-- Content injected here -->
+                <div class="page" style="max-width: 100%; margin: 0; background: transparent; padding: 0;">
+                    <div class="toolbar">
+                        <button class="btn success" id="btnSaveDraft">Save Draft</button>
+                        <button class="btn warn" id="btnActivate">Activate</button>
+                        <button class="btn" data-bs-toggle="modal" data-bs-target="#importExcelModal">Import Excel</button>
+                        <button class="btn">Copy From Existing</button>
+                        <button class="btn gray" onclick="window.location.href='admin_PLList.html'">Back</button>
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>Rule Utama:</strong> Price List dengan target yang sama tidak boleh overlap period. Jika
+                        status
+                        sudah <strong>Active</strong>, data tidak boleh diedit. Jika ada item atau tanggal yang tidak
+                        memiliki
+                        period price list, maka harga saat billing akan kosong.
+                    </div>
+
+                    <div class="tabs">
+                        <div class="tab active">Informasi</div>
+                        <div class="tab">Detail Harga</div>
+                        <div class="tab">Validation</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Header Information</div>
+                        <div class="card-body">
+                            <div class="grid">
+                                <div class="field col-3">
+                                    <label>Price List No</label>
+                                    <input id="inpPLNo" class="readonly" type="text" value="AUTO" readonly />
+                                </div>
+                                <div class="field col-4">
+                                    <label>Price List Name</label>
+                                    <input id="inpPLName" type="text" value="Sunrise Bakery PL" />
+                                </div>
+                                <div class="field col-2">
+                                    <label>Status</label>
+                                    <input id="inpStatus" class="readonly" type="text" value="Draft" readonly />
+                                </div>
+                                <div class="field col-3">
+                                    <label>Currency</label>
+                                    <select id="selCurrency">
+                                        <option selected>IDR</option>
+                                        <option>USD</option>
+                                    </select>
+                                </div>
+                                <div class="field col-2">
+                                    <label>Toko</label>
+                                    <select id="selToko">
+                                        <option value="">-- Select Toko --</option>
+                                    </select>
+                                </div>
+                                <div class="field col-3">
+                                    <label>PT</label>
+                                    <select id="selPT">
+                                        <option value="">-- Select PT --</option>
+                                        <option>PT Sunrise Jaya</option>
+                                        <option>PT Maju Bersama</option>
+                                        <option>PT Jaya Abadi</option>
+                                    </select>
+                                </div>
+                                <div class="field col-3">
+                                    <label>Konsep</label>
+                                    <select id="selKonsep">
+                                        <option value="">-- Select Konsep --</option>
+                                        <option>General Bakery</option>
+                                        <option>Rakuni</option>
+                                        <option>Eaton</option>
+                                        <option>Ah Mei</option>
+                                    </select>
+                                </div>
+                                <div class="field col-2">
+                                    <label>Valid From</label>
+                                    <input id="inpValidFrom" type="date" value="2026-01-15" />
+                                </div>
+                                <div class="field col-2">
+                                    <label>Valid To</label>
+                                    <input id="inpValidTo" type="date" value="2026-01-31" />
+                                </div>
+
+                                <div class="field col-12">
+                                    <label>Remarks</label>
+                                    <textarea id="inpRemarks"
+                                        placeholder="Catatan perubahan harga, alasan revisi, atau referensi approval."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Item Price Detail</div>
+                        <div class="card-body">
+                            <div class="toolbar" style="margin-top:0;">
+                                <button class="btn primary" id="btnAddItem">+ Add Item</button>
+                            </div>
+
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th class="center">No</th>
+                                            <th>Item Code</th>
+                                            <th>Item Name</th>
+                                            <th>UoM</th>
+                                            <th class="right">Price</th>
+                                            <th>Notes</th>
+                                            <th>Validation</th>
+                                            <th class="center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tblBody">
+                                        <tr>
+                                            <td class="center row-no">1</td>
+                                            <td><input type="text" value="BRD-001" style="width:100px; border:none; background:transparent;" /></td>
+                                            <td><input type="text" value="Butter Croissant" style="width:100%; border:none; background:transparent;" /></td>
+                                            <td>PCS</td>
+                                            <td class="right"><input type="text" value="18,000.00"
+                                                    style="text-align:right;" /></td>
+                                            <td><input type="text" value="Updated" /></td>
+                                            <td><span class="small">OK</span></td>
+                                            <td class="center"><button class="btn btn-sm btn-outline-danger btn-delete"><i class="bi bi-trash"></i></button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="center row-no">2</td>
+                                            <td><input type="text" value="BRD-007" style="width:100px; border:none; background:transparent;" /></td>
+                                            <td><input type="text" value="Chocolate Donut" style="width:100%; border:none; background:transparent;" /></td>
+                                            <td>PCS</td>
+                                            <td class="right"><input type="text" value="15,000.00"
+                                                    style="text-align:right;" /></td>
+                                            <td><input type="text" /></td>
+                                            <td><span class="small">OK</span></td>
+                                            <td class="center"><button class="btn btn-sm btn-outline-danger btn-delete"><i class="bi bi-trash"></i></button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="center row-no">3</td>
+                                            <td><input type="text" value="BRD-010" style="width:100px; border:none; background:transparent;" /></td>
+                                            <td><input type="text" value="Cheese Danish" style="width:100%; border:none; background:transparent;" /></td>
+                                            <td>PCS</td>
+                                            <td class="right"><input type="text" value="22,000.00"
+                                                    style="text-align:right;" /></td>
+                                            <td><input type="text" /></td>
+                                            <td><span class="small">OK</span></td>
+                                            <td class="center"><button class="btn btn-sm btn-outline-danger btn-delete"><i class="bi bi-trash"></i></button></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="center row-no">4</td>
+                                            <td><input type="text" value="BRD-013" style="width:100px; border:none; background:transparent;" /></td>
+                                            <td><input type="text" value="Soft Burger Bun" style="width:100%; border:none; background:transparent;" /></td>
+                                            <td>PCS</td>
+                                            <td class="right"><input type="text" value="9,000.00"
+                                                    style="text-align:right;" /></td>
+                                            <td><input type="text" /></td>
+                                            <td><span class="small">OK</span></td>
+                                            <td class="center"><button class="btn btn-sm btn-outline-danger btn-delete"><i class="bi bi-trash"></i></button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="section-note">
+                                Harga boleh kosong pada draft. Saat billing, jika tidak ditemukan price list yang sesuai
+                                period,
+                                maka harga akan tetap kosong.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid" style="display: none;">
+                        <div class="col-6">
+                            <div class="card" style="margin-bottom:0;">
+                                <div class="card-header">Validation Result</div>
+                                <div class="card-body">
+                                    <div class="info-box">
+                                        Tidak ditemukan overlap period untuk kombinasi <strong>Concept = Rakuni</strong>
+                                        dan
+                                        <strong>Currency = IDR</strong>.
+                                    </div>
+                                    <div class="warning-box">
+                                        Terdapat item dengan harga kosong. Draft tetap bisa disimpan, namun billing akan
+                                        menghasilkan harga kosong untuk item tersebut jika tidak ada period lain yang
+                                        match.
+                                    </div>
+                                    <div class="error-box" style="margin-bottom:0;">
+                                        Contoh pesan jika overlap terjadi: <strong>Period overlap dengan Price List No
+                                            PL-2026-0001</strong>.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card" style="margin-bottom:0;">
+                                <div class="card-header">Pricing Rules Summary</div>
+                                <div class="card-body">
+                                    <div class="summary-box">
+                                        <h4>Behavior</h4>
+                                        <ul>
+                                            <li>Harga billing diambil berdasarkan <strong>Delivery Date</strong>.</li>
+                                            <li>Sistem mencari period price list yang sesuai dengan tanggal delivery.
+                                            </li>
+                                            <li>Target yang sama tidak boleh memiliki period overlap.</li>
+                                            <li>Price List berstatus <strong>Active</strong> harus lock.</li>
+                                            <li>Jika periode tidak tersedia, harga billing akan kosong.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Item Picker Modal -->
+    <div class="modal fade" id="itemPickerModal" tabindex="-1" aria-labelledby="itemPickerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="itemPickerModalLabel"><i class="bi bi-search me-2"></i>Pilih Item</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <input type="text" id="itemPickerSearch" class="form-control mb-3" placeholder="Cari kode atau nama item..." autocomplete="off" />
+                    <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <table class="table table-hover table-sm mb-0" style="min-width: unset;">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th style="width:120px;">Item Code</th>
+                                    <th>Item Name</th>
+                                    <th style="width:80px;">UoM</th>
+                                    <th style="width:80px;" class="text-center">Pilih</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemPickerBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Excel Modal -->
+    <div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="importExcelModalLabel"><i class="bi bi-file-earmark-spreadsheet-fill me-2"></i>Import Excel</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="text-muted mb-4 small">Unduh template terlebih dahulu jika Anda belum memilikinya. Isi template sesuai format dan unggah kembali.</p>
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-outline-primary"><i class="bi bi-download me-2"></i>1. Download Template</button>
+                        <div class="position-relative">
+                            <input type="file" class="form-control" id="excelFileInput" accept=".xls,.xlsx" style="display: none;" />
+                            <button class="btn btn-success w-100" onclick="document.getElementById('excelFileInput').click()">
+                                <i class="bi bi-upload me-2"></i>2. Unggah Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="billing_storage.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = new SidebarSystem("admin", "PriceListAdd");
+            sidebar.render();
+
+            // Populate Toko dropdown from same source as Billing (DO + GRPO customers)
+            const selToko = document.getElementById("selToko");
+            const tokoList = (typeof BillingStorage !== "undefined") ? BillingStorage.getCustomerList() : [];
+            tokoList.forEach(name => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.textContent = name;
+                selToko.appendChild(opt);
+            });
+
+            const sess = localStorage.getItem("dolfin_user");
+            if (sess) {
+                const user = JSON.parse(sess);
+                const ub = document.getElementById("userBtn");
+                if (ub) ub.textContent = user.name || "Admin";
+                const ui = document.getElementById("userInfo");
+                if (ui) ui.textContent = `${user.email} • role=${user.role}`;
+            }
+
+            const blo = document.getElementById("btnLogout");
+            if (blo) {
+                blo.addEventListener("click", () => {
+                    localStorage.removeItem("dolfin_user");
+                    window.location.href = "index.html";
+                });
+            }
+
+            // ── Price List persistence helpers ───────────────────────────
+            const LS_PL = "dolfin_pl_list";
+            const params = new URLSearchParams(window.location.search);
+            const editPlNo = params.get("plNo");
+
+            const getPLList = () => JSON.parse(localStorage.getItem(LS_PL) || "[]");
+            const savePLList = (list) => localStorage.setItem(LS_PL, JSON.stringify(list));
+
+            const genPlNo = () => {
+                const list = getPLList();
+                const year = new Date().getFullYear();
+                const max = list.reduce((n, pl) => {
+                    const m = /PL-\d{4}-(\d{4})/.exec(pl.plNo || "");
+                    return m ? Math.max(n, parseInt(m[1])) : n;
+                }, 0);
+                return `PL-${year}-${String(max + 1).padStart(4, "0")}`;
+            };
+
+            const readForm = () => {
+                const rows = [];
+                tbody.querySelectorAll("tr").forEach(tr => {
+                    const tds = tr.querySelectorAll("td");
+                    const code  = tds[1]?.querySelector("input")?.value.trim() || "";
+                    const name  = tds[2]?.querySelector("input")?.value.trim() || "";
+                    const uom   = tds[3]?.textContent.trim() || "";
+                    const price = parseFloat((tds[4]?.querySelector("input")?.value || "0").replace(/,/g, "")) || 0;
+                    const notes = tds[5]?.querySelector("input")?.value.trim() || "";
+                    if (code) rows.push({ code, name, uom, price, notes });
+                });
+                return {
+                    plNo:      document.getElementById("inpPLNo").value,
+                    plName:    document.getElementById("inpPLName").value.trim(),
+                    currency:  document.getElementById("selCurrency").value,
+                    toko:      document.getElementById("selToko").value,
+                    pt:        document.getElementById("selPT").value,
+                    konsep:    document.getElementById("selKonsep").value,
+                    validFrom: document.getElementById("inpValidFrom").value,
+                    validTo:   document.getElementById("inpValidTo").value,
+                    remarks:   document.getElementById("inpRemarks").value.trim(),
+                    items:     rows,
+                };
+            };
+
+            const loadForm = (pl) => {
+                document.getElementById("inpPLNo").value       = pl.plNo;
+                document.getElementById("inpPLName").value     = pl.plName;
+                document.getElementById("inpStatus").value     = pl.status;
+                document.getElementById("selCurrency").value   = pl.currency;
+                document.getElementById("selToko").value       = pl.toko;
+                document.getElementById("selPT").value         = pl.pt;
+                document.getElementById("selKonsep").value     = pl.konsep;
+                document.getElementById("inpValidFrom").value  = pl.validFrom;
+                document.getElementById("inpValidTo").value    = pl.validTo;
+                document.getElementById("inpRemarks").value    = pl.remarks || "";
+                tbody.innerHTML = "";
+                (pl.items || []).forEach(item => addItemRow(item));
+            };
+
+            // Load existing PL if editing
+            if (editPlNo) {
+                const existing = getPLList().find(p => p.plNo === editPlNo);
+                if (existing) loadForm(existing);
+            }
+
+            document.getElementById("btnSaveDraft").addEventListener("click", () => {
+                const data = readForm();
+                if (!data.plName) { alert("Price List Name wajib diisi."); return; }
+                const list = getPLList();
+                const idx  = list.findIndex(p => p.plNo === data.plNo);
+                const pl   = idx >= 0 ? { ...list[idx], ...data } : { ...data, plNo: genPlNo(), status: "Draft" };
+                if (idx >= 0) { pl.status = pl.status === "Active" ? "Active" : "Draft"; list[idx] = pl; }
+                else list.push(pl);
+                savePLList(list);
+                document.getElementById("inpPLNo").value  = pl.plNo;
+                document.getElementById("inpStatus").value = pl.status;
+                alert(`Price List "${pl.plName}" berhasil disimpan sebagai ${pl.status}.`);
+            });
+
+            document.getElementById("btnActivate").addEventListener("click", () => {
+                const data = readForm();
+                if (!data.plName) { alert("Price List Name wajib diisi."); return; }
+                if (!data.validFrom || !data.validTo) { alert("Valid From dan Valid To wajib diisi sebelum Activate."); return; }
+                if (data.items.length === 0) { alert("Tambahkan minimal 1 item sebelum Activate."); return; }
+                const list = getPLList();
+                const idx  = list.findIndex(p => p.plNo === data.plNo);
+                const pl   = idx >= 0 ? { ...list[idx], ...data, status: "Active" } : { ...data, plNo: genPlNo(), status: "Active" };
+                if (idx >= 0) list[idx] = pl; else list.push(pl);
+                savePLList(list);
+                document.getElementById("inpPLNo").value   = pl.plNo;
+                document.getElementById("inpStatus").value = "Active";
+                alert(`Price List "${pl.plName}" berhasil di-Activate.`);
+            });
+
+            // ── Item Master ──────────────────────────────────────────────
+            const itemMaster = [
+                { code: "BRD-001", name: "Butter Croissant",   uom: "PCS"  },
+                { code: "BRD-002", name: "Almond Croissant",   uom: "PCS"  },
+                { code: "BRD-003", name: "Pain Au Chocolat",   uom: "PCS"  },
+                { code: "BRD-004", name: "Classic Baguette",   uom: "PCS"  },
+                { code: "BRD-005", name: "Whole Wheat Loaf",   uom: "LOAF" },
+                { code: "BRD-006", name: "Milk Bun",           uom: "PCS"  },
+                { code: "BRD-007", name: "Chocolate Donut",    uom: "PCS"  },
+                { code: "BRD-008", name: "Glazed Donut",       uom: "PCS"  },
+                { code: "BRD-009", name: "Cinnamon Roll",      uom: "PCS"  },
+                { code: "BRD-010", name: "Cheese Danish",      uom: "PCS"  },
+                { code: "BRD-011", name: "Raisin Danish",      uom: "PCS"  },
+                { code: "BRD-012", name: "Sourdough Loaf",     uom: "LOAF" },
+                { code: "BRD-013", name: "Soft Burger Bun",    uom: "PCS"  },
+                { code: "BRD-014", name: "Hotdog Bun",         uom: "PCS"  },
+                { code: "BRD-015", name: "Mini Palmier",       uom: "PCS"  },
+            ];
+
+            const tbody = document.getElementById("tblBody");
+
+            const updateRowNumbers = () => {
+                if (!tbody) return;
+                tbody.querySelectorAll("tr").forEach((tr, index) => {
+                    const tdNo = tr.querySelector(".row-no");
+                    if (tdNo) tdNo.textContent = index + 1;
+                });
+            };
+
+            const addItemRow = (item) => {
+                const priceVal = item.price ? Number(item.price).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00";
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="center row-no"></td>
+                    <td><input type="text" value="${item.code}" style="width:100px; border:none; background:transparent;" readonly /></td>
+                    <td><input type="text" value="${item.name}" style="width:100%; border:none; background:transparent;" readonly /></td>
+                    <td>${item.uom}</td>
+                    <td class="right"><input type="text" value="${priceVal}" style="text-align:right;" /></td>
+                    <td><input type="text" value="${item.notes || ""}" /></td>
+                    <td><span class="small text-muted">-</span></td>
+                    <td class="center"><button class="btn btn-sm btn-outline-danger btn-delete"><i class="bi bi-trash"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+                updateRowNumbers();
+            };
+
+            // ── Item Picker Modal ─────────────────────────────────────────
+            const itemPickerModal = new bootstrap.Modal(document.getElementById("itemPickerModal"));
+            const itemPickerBody  = document.getElementById("itemPickerBody");
+            const itemPickerSearch = document.getElementById("itemPickerSearch");
+
+            const getUsedCodes = () => {
+                return new Set(
+                    [...tbody.querySelectorAll("tr")].map(tr => {
+                        const input = tr.querySelectorAll("td")[1]?.querySelector("input");
+                        return input ? input.value.trim() : "";
+                    }).filter(Boolean)
+                );
+            };
+
+            const renderPickerRows = (filter) => {
+                const q = (filter || "").toLowerCase();
+                const used = getUsedCodes();
+                const filtered = itemMaster
+                    .filter(i => !used.has(i.code))
+                    .filter(i => !q || i.code.toLowerCase().includes(q) || i.name.toLowerCase().includes(q));
+                itemPickerBody.innerHTML = filtered.map(i => `
+                    <tr style="cursor:pointer;" data-code="${i.code}" data-name="${i.name}" data-uom="${i.uom}">
+                        <td>${i.code}</td>
+                        <td>${i.name}</td>
+                        <td>${i.uom}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-primary btn-pick-item">Pilih</button>
+                        </td>
+                    </tr>
+                `).join("");
+            };
+
+            document.getElementById("btnAddItem").addEventListener("click", () => {
+                itemPickerSearch.value = "";
+                renderPickerRows("");
+                itemPickerModal.show();
+                setTimeout(() => itemPickerSearch.focus(), 300);
+            });
+
+            itemPickerSearch.addEventListener("input", () => renderPickerRows(itemPickerSearch.value));
+
+            itemPickerBody.addEventListener("click", (e) => {
+                const btn = e.target.closest(".btn-pick-item");
+                if (!btn) return;
+                const row = btn.closest("tr");
+                addItemRow({
+                    code: row.dataset.code,
+                    name: row.dataset.name,
+                    uom:  row.dataset.uom,
+                });
+                itemPickerModal.hide();
+            });
+
+            // ── Delete row ────────────────────────────────────────────────
+            if (tbody) {
+                tbody.addEventListener("click", (e) => {
+                    const btn = e.target.closest(".btn-delete");
+                    if (btn) {
+                        e.target.closest("tr").remove();
+                        updateRowNumbers();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

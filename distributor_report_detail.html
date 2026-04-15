@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Distributor | Report - Detail Pengiriman</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #f5f7fb; font-family: Arial, Helvetica, sans-serif; color: #222; margin: 0; }
+
+        .filter-bar {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+            display: flex;
+            gap: 14px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .filter-field select,
+        .filter-field input {
+            height: 36px;
+            border: 1px solid #d5dae3;
+            border-radius: 8px;
+            padding: 0 10px;
+            font-size: 13px;
+            background: #f9fafc;
+            color: #374151;
+            min-width: 160px;
+        }
+
+        .btn-run {
+            height: 36px;
+            padding: 0 18px;
+            background: #16a34a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-run:hover { background: #15803d; }
+
+        .btn-export {
+            height: 36px;
+            padding: 0 14px;
+            background: #fff;
+            color: #374151;
+            border: 1px solid #d5dae3;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-export:hover { background: #f3f4f6; color: #111; }
+
+        .btn-print-prev {
+            height: 36px;
+            padding: 0 14px;
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-print-prev:hover { background: #fde68a; color: #78350f; }
+
+        .report-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .report-card-header {
+            padding: 14px 18px;
+            background: #f9fafc;
+            border-bottom: 1px solid #eef0f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .report-card-header .title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #111827;
+        }
+
+        .report-card-header .meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: #eef0f4;
+            border-bottom: 1px solid #eef0f4;
+        }
+
+        .kpi-box {
+            background: #fff;
+            padding: 14px 18px;
+        }
+
+        .kpi-box .kpi-label {
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 4px;
+        }
+
+        .kpi-box .kpi-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .kpi-box .kpi-sub {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 900px;
+        }
+
+        /* Two-level header styling */
+        thead tr:first-child th {
+            background: #f0f4ff;
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 8px 12px;
+            border-bottom: 1px solid #dbeafe;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        thead tr:last-child th {
+            background: #f9fafc;
+            color: #555;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 7px 10px;
+            border-bottom: 2px solid #e5e7eb;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        /* Override for first two cols */
+        thead tr:first-child th.col-item {
+            background: #f4f6f8;
+            color: #555;
+            text-align: left;
+            vertical-align: bottom;
+        }
+
+        tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #f0f2f5;
+            vertical-align: middle;
+        }
+
+        .td-item { text-align: left; font-weight: 600; }
+
+        .qty-price-cell {
+            text-align: center;
+        }
+
+        .qty-price-cell .qty { font-weight: 700; color: #111; }
+        .qty-price-cell .price { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+        tbody tr:hover { background: #fafcff; }
+
+        tfoot th {
+            background: #eef2f6;
+            padding: 9px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            border-top: 2px solid #d5dae3;
+            text-align: center;
+        }
+
+        tfoot th.text-left { text-align: left; }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .tag-green { background: #dcfce7; color: #166534; }
+        .tag-blue { background: #dbeafe; color: #1d4ed8; }
+        .tag-amber { background: #fef3c7; color: #92400e; }
+
+        .notice-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #1d4ed8;
+            margin: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        @media (max-width: 992px) {
+            .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .kpi-strip { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-success fw-bold"><i class="bi bi-calendar3-range me-2"></i>Report — Detail Pengiriman</h4>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-field">
+                        <label>Customer</label>
+                        <select id="filterCustomer">
+                            <option value="">— Semua Customer —</option>
+                            <option value="sunrise" selected>Sunrise Bakery Mart</option>
+                            <option value="golden">Golden Sweets</option>
+                            <option value="makmur">Makmur Snack</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label>Product Group</label>
+                        <select id="filterProductGroup">
+                            <option value="">— Semua Group —</option>
+                            <option value="bread">Bread &amp; Pastry</option>
+                            <option value="snack">Snacks</option>
+                            <option value="beverage">Beverages</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label>Periode Dari</label>
+                        <input type="date" id="filterFrom" value="2026-04-01">
+                    </div>
+                    <div class="filter-field">
+                        <label>Periode Sampai</label>
+                        <input type="date" id="filterTo" value="2026-04-30">
+                    </div>
+                    <div class="filter-field">
+                        <label>Billing No</label>
+                        <input type="text" id="filterBillNo" placeholder="cth: BILL-202604-..." style="min-width:180px;">
+                    </div>
+                    <button class="btn-run" onclick="runReport()">
+                        <i class="bi bi-search"></i> Tampilkan
+                    </button>
+                    <a class="btn-export" onclick="exportExcel()" href="#">
+                        <i class="bi bi-file-earmark-excel"></i> Export
+                    </a>
+                    <a class="btn-print-prev" onclick="printPreview()" href="#">
+                        <i class="bi bi-printer"></i> Print Preview
+                    </a>
+                </div>
+
+                <!-- Report Area -->
+                <div class="report-card" id="reportArea" style="display:none;">
+                    <div class="kpi-strip">
+                        <div class="kpi-box">
+                            <div class="kpi-label">Jumlah DO</div>
+                            <div class="kpi-value">12</div>
+                            <div class="kpi-sub">delivery order tercakup</div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="kpi-label">Tanggal Pengiriman</div>
+                            <div class="kpi-value">4</div>
+                            <div class="kpi-sub">tanggal unik</div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="kpi-label">Total Qty</div>
+                            <div class="kpi-value">1,280</div>
+                            <div class="kpi-sub">unit semua item</div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="kpi-label">Total Amount</div>
+                            <div class="kpi-value">Rp 19,697,500</div>
+                            <div class="kpi-sub">seluruh pengiriman</div>
+                        </div>
+                    </div>
+
+                    <div class="report-card-header">
+                        <div>
+                            <div class="title">Detail Breakdown per Item &amp; Tanggal Pengiriman</div>
+                            <div class="meta" id="reportMeta">Customer: Sunrise Bakery Mart &nbsp;|&nbsp; Periode: 01-Apr-2026 s/d 30-Apr-2026</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="tag tag-blue">Landscape Format</span>
+                            <span class="tag tag-green">Confirmed</span>
+                        </div>
+                    </div>
+
+                    <div class="notice-box">
+                        <i class="bi bi-info-circle-fill"></i>
+                        Setiap kolom tanggal menampilkan Qty pengiriman dan harga satuan.
+                        Report ini cocok untuk verifikasi per tanggal DO.
+                    </div>
+
+                    <div class="table-wrap">
+                        <table id="reportTable">
+                            <thead>
+                                <tr>
+                                    <th class="col-item" rowspan="2" style="text-align:left; vertical-align:bottom; width:160px;">Customer</th>
+                                    <th class="col-item" rowspan="2" style="text-align:left; vertical-align:bottom; width:130px;">Product Group</th>
+                                    <th class="col-item" rowspan="2" style="text-align:left; vertical-align:bottom; width:120px;">Item Code</th>
+                                    <th class="col-item" rowspan="2" style="text-align:left; vertical-align:bottom; width:200px;">Item Name</th>
+                                    <th colspan="2" style="width:160px;">01-Apr-2026</th>
+                                    <th colspan="2" style="width:160px;">03-Apr-2026</th>
+                                    <th colspan="2" style="width:160px;">05-Apr-2026</th>
+                                    <th colspan="2" style="width:160px;">08-Apr-2026</th>
+                                    <th rowspan="2" style="vertical-align:bottom; width:100px;">Total Qty</th>
+                                    <th rowspan="2" style="vertical-align:bottom; width:140px;">Total Amount</th>
+                                </tr>
+                                <tr>
+                                    <th>Qty</th><th>Price</th>
+                                    <th>Qty</th><th>Price</th>
+                                    <th>Qty</th><th>Price</th>
+                                    <th>Qty</th><th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Sunrise Bakery Mart</td>
+                                    <td>Bread &amp; Pastry</td>
+                                    <td class="td-item">BRD-001</td>
+                                    <td>Butter Croissant</td>
+                                    <td class="text-center">85</td><td class="text-right">18,000</td>
+                                    <td class="text-center">95</td><td class="text-right">18,000</td>
+                                    <td class="text-center">90</td><td class="text-right">18,000</td>
+                                    <td class="text-center">95</td><td class="text-right">18,000</td>
+                                    <td class="text-center fw-bold">365</td>
+                                    <td class="text-right fw-bold">6,570,000</td>
+                                </tr>
+                                <tr>
+                                    <td>Sunrise Bakery Mart</td>
+                                    <td>Bread &amp; Pastry</td>
+                                    <td class="td-item">BRD-007</td>
+                                    <td>Chocolate Donut</td>
+                                    <td class="text-center">70</td><td class="text-right">14,500</td>
+                                    <td class="text-center">80</td><td class="text-right">14,500</td>
+                                    <td class="text-center">85</td><td class="text-right">14,500</td>
+                                    <td class="text-center">75</td><td class="text-right">14,500</td>
+                                    <td class="text-center fw-bold">310</td>
+                                    <td class="text-right fw-bold">4,495,000</td>
+                                </tr>
+                                <tr>
+                                    <td>Sunrise Bakery Mart</td>
+                                    <td>Bread &amp; Pastry</td>
+                                    <td class="td-item">BRD-010</td>
+                                    <td>Cheese Danish</td>
+                                    <td class="text-center">60</td><td class="text-right">21,500</td>
+                                    <td class="text-center">70</td><td class="text-right">21,500</td>
+                                    <td class="text-center">65</td><td class="text-right">21,500</td>
+                                    <td class="text-center">60</td><td class="text-right">21,500</td>
+                                    <td class="text-center fw-bold">255</td>
+                                    <td class="text-right fw-bold">5,482,500</td>
+                                </tr>
+                                <tr>
+                                    <td>Sunrise Bakery Mart</td>
+                                    <td>Bread &amp; Pastry</td>
+                                    <td class="td-item">BRD-013</td>
+                                    <td>Soft Burger Bun</td>
+                                    <td class="text-center">85</td><td class="text-right">9,000</td>
+                                    <td class="text-center">70</td><td class="text-right">9,000</td>
+                                    <td class="text-center">95</td><td class="text-right">9,000</td>
+                                    <td class="text-center">100</td><td class="text-right">9,000</td>
+                                    <td class="text-center fw-bold">350</td>
+                                    <td class="text-right fw-bold">3,150,000</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="text-left" colspan="4">TOTAL GRAND</th>
+                                    <th>300</th><th></th>
+                                    <th>315</th><th></th>
+                                    <th>335</th><th></th>
+                                    <th>330</th><th></th>
+                                    <th>1,280</th>
+                                    <th class="text-right">Rp 19,697,500</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div id="emptyState" class="report-card">
+                    <div class="empty-state">
+                        <i class="bi bi-calendar3-range text-success"></i>
+                        <div class="fw-bold mb-1">Report Detail Pengiriman</div>
+                        <div class="small text-muted">Pilih filter di atas lalu klik <strong>Tampilkan</strong> untuk menjalankan report.<br>
+                            Report ini menampilkan breakdown qty dan harga per tanggal pengiriman (landscape).</div>
+                    </div>
+                </div>
+
+                <div class="text-center text-muted small mt-3 mb-2">© 2026 Dolfin — Distributor Portal</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+    <script>
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=distributor";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = new SidebarSystem("distributor", "report-detail");
+            sidebar.render();
+        });
+
+        function runReport() {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('reportArea').style.display = 'block';
+
+            const from = document.getElementById('filterFrom').value;
+            const to = document.getElementById('filterTo').value;
+            const cust = document.getElementById('filterCustomer').options[document.getElementById('filterCustomer').selectedIndex].text;
+            document.getElementById('reportMeta').textContent =
+                `Customer: ${cust} | Periode: ${formatDate(from)} s/d ${formatDate(to)}`;
+        }
+
+        function formatDate(val) {
+            if (!val) return '-';
+            const d = new Date(val);
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${String(d.getDate()).padStart(2,'0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
+        }
+
+        function exportExcel() {
+            const filename = 'Billing_Report_Detail.xls';
+            const html = `
+                <meta charset="utf-8">
+                <table>
+                    <tr><th colspan="12" style="font-size:15px; font-weight:bold;">Dolfin — Report Detail Pengiriman</th></tr>
+                    <tr><td colspan="12">Customer: Sunrise Bakery Mart</td></tr>
+                    <tr><td colspan="12">Periode: 01-Apr-2026 s/d 30-Apr-2026</td></tr>
+                    <tr><td colspan="12"></td></tr>
+                </table>
+                <table border="1">
+                    <tr>
+                        <th rowspan="2" style="background:#f0f0f0; vertical-align:middle;">Customer</th>
+                        <th rowspan="2" style="background:#f0f0f0; vertical-align:middle;">Product Group</th>
+                        <th rowspan="2" style="background:#f0f0f0; vertical-align:middle;">Item Code</th>
+                        <th rowspan="2" style="background:#f0f0f0; vertical-align:middle;">Item Name</th>
+                        <th colspan="2" style="background:#f0f0f0; text-align:center;">01-Apr-2026</th>
+                        <th colspan="2" style="background:#f0f0f0; text-align:center;">03-Apr-2026</th>
+                        <th colspan="2" style="background:#f0f0f0; text-align:center;">05-Apr-2026</th>
+                        <th colspan="2" style="background:#f0f0f0; text-align:center;">08-Apr-2026</th>
+                        <th rowspan="2" style="background:#f0f0f0; vertical-align:middle;">Total Qty</th>
+                        <th rowspan="2" style="background:#f0f0f0; vertical-align:middle;">Total Amount</th>
+                    </tr>
+                    <tr>
+                        <th style="background:#f8f9fa;">Qty</th><th style="background:#f8f9fa;">Price</th>
+                        <th style="background:#f8f9fa;">Qty</th><th style="background:#f8f9fa;">Price</th>
+                        <th style="background:#f8f9fa;">Qty</th><th style="background:#f8f9fa;">Price</th>
+                        <th style="background:#f8f9fa;">Qty</th><th style="background:#f8f9fa;">Price</th>
+                    </tr>
+                    <tr>
+                        <td>Sunrise Bakery Mart</td><td>Bread &amp; Pastry</td>
+                        <td>BRD-001</td><td>Butter Croissant</td>
+                        <td>85</td><td>18000</td><td>95</td><td>18000</td>
+                        <td>90</td><td>18000</td><td>95</td><td>18000</td>
+                        <td>365</td><td>6570000</td>
+                    </tr>
+                    <tr>
+                        <td>Sunrise Bakery Mart</td><td>Bread &amp; Pastry</td>
+                        <td>BRD-007</td><td>Chocolate Donut</td>
+                        <td>70</td><td>14500</td><td>80</td><td>14500</td>
+                        <td>85</td><td>14500</td><td>75</td><td>14500</td>
+                        <td>310</td><td>4495000</td>
+                    </tr>
+                    <tr>
+                        <td>Sunrise Bakery Mart</td><td>Bread &amp; Pastry</td>
+                        <td>BRD-010</td><td>Cheese Danish</td>
+                        <td>60</td><td>21500</td><td>70</td><td>21500</td>
+                        <td>65</td><td>21500</td><td>60</td><td>21500</td>
+                        <td>255</td><td>5482500</td>
+                    </tr>
+                    <tr>
+                        <td>Sunrise Bakery Mart</td><td>Bread &amp; Pastry</td>
+                        <td>BRD-013</td><td>Soft Burger Bun</td>
+                        <td>85</td><td>9000</td><td>70</td><td>9000</td>
+                        <td>95</td><td>9000</td><td>100</td><td>9000</td>
+                        <td>350</td><td>3150000</td>
+                    </tr>
+                    <tr>
+                        <th colspan="4" style="background:#e0e0e0;">TOTAL GRAND</th>
+                        <th style="background:#e0e0e0;">300</th><th style="background:#e0e0e0;"></th>
+                        <th style="background:#e0e0e0;">315</th><th style="background:#e0e0e0;"></th>
+                        <th style="background:#e0e0e0;">335</th><th style="background:#e0e0e0;"></th>
+                        <th style="background:#e0e0e0;">330</th><th style="background:#e0e0e0;"></th>
+                        <th style="background:#e0e0e0;">1280</th><th style="background:#e0e0e0;">19697500</th>
+                    </tr>
+                </table>`;
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename; a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 300);
+        }
+
+        function printPreview() {
+            window.open('distributor_BillingPrint.html?f=2', '_blank');
+        }
+    </script>
+</body>
+</html>

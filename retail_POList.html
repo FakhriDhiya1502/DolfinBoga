@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retail | PO Internal List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #222;
+        }
+
+        .page {
+            max-width: 100%;
+            border-radius: 12px;
+            background: #fff;
+            padding: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .subtext {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .btn-action {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 0;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            background: #2563eb;
+            color: #fff;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary-action {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 0;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 14px 16px;
+            font-weight: 700;
+            border-bottom: 1px solid #eef0f4;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            height: 38px;
+            border: 1px solid #d5dae3;
+            border-radius: 8px;
+            padding: 0 11px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        .filter-actions {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .summary-box {
+            border: 1px solid #e8ebf1;
+            border-radius: 10px;
+            padding: 12px;
+            background: #fafbfe;
+        }
+
+        .summary-box .label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .summary-box .value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #edf0f5;
+            font-size: 13px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f9fafc;
+            font-size: 12px;
+            color: #555;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        tbody tr:hover {
+            background: #fafcff;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .tag-gray {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .tag-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .tag-green {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .text-link {
+            color: #2563eb;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-xs {
+            padding: 7px 10px;
+            border-radius: 7px;
+            border: 0;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-open {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .btn-edit {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        @media (max-width: 1100px) {
+            .grid,
+            .summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 700px) {
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .grid,
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="retail_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Retail Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-primary fw-bold"><i class="bi bi-file-earmark-text me-2"></i>PO Internal</h4>
+                </div>
+
+                <div class="page shadow-sm">
+
+                    <div class="topbar">
+                        <div>
+                            <h1>PO Internal List</h1>
+                            <div class="subtext">Daftar Purchase Order internal untuk pengadaan barang ke distributor.</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="retail_POAdd.html" class="btn-action">+ Add New PO</a>
+                            <button class="btn-secondary-action">Export Excel</button>
+                        </div>
+                    </div>
+
+                    <!-- Filter -->
+                    <div class="card">
+                        <div class="card-header">Filter</div>
+                        <div class="card-body">
+                            <div class="grid">
+                                <div class="field">
+                                    <label>PO No</label>
+                                    <input id="fPoNo" type="text" placeholder="Search PO no">
+                                </div>
+                                <div class="field">
+                                    <label>Store</label>
+                                    <input id="fStore" type="text" placeholder="Search store">
+                                </div>
+                                <div class="field">
+                                    <label>Customer</label>
+                                    <input id="fCustomer" type="text" placeholder="Search customer">
+                                </div>
+                                <div class="field">
+                                    <label>Status</label>
+                                    <select id="fStatus">
+                                        <option value="">All Status</option>
+                                        <option>Draft</option>
+                                        <option>Open</option>
+                                        <option>Closed</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>PO Date From</label>
+                                    <input id="fPoDateFrom" type="date">
+                                </div>
+                                <div class="field">
+                                    <label>PO Date To</label>
+                                    <input id="fPoDateTo" type="date">
+                                </div>
+                                <div class="field">
+                                    <label>Receipt Date From</label>
+                                    <input id="fReceiptFrom" type="date">
+                                </div>
+                                <div class="field">
+                                    <label>Receipt Date To</label>
+                                    <input id="fReceiptTo" type="date">
+                                </div>
+                            </div>
+                            <div class="filter-actions">
+                                <button class="btn-action" onclick="renderTable()">Search</button>
+                                <button class="btn-secondary-action" onclick="resetFilter()">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="card">
+                        <div class="card-header">Summary</div>
+                        <div class="card-body">
+                            <div class="summary-grid">
+                                <div class="summary-box">
+                                    <div class="label">Total PO</div>
+                                    <div class="value" id="sumTotal">-</div>
+                                </div>
+                                <div class="summary-box">
+                                    <div class="label">Draft</div>
+                                    <div class="value" id="sumDraft">-</div>
+                                </div>
+                                <div class="summary-box">
+                                    <div class="label">Open</div>
+                                    <div class="value" id="sumOpen">-</div>
+                                </div>
+                                <div class="summary-box">
+                                    <div class="label">Closed</div>
+                                    <div class="value" id="sumClosed">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PO List Table -->
+                    <div class="card">
+                        <div class="card-header">PO Documents</div>
+                        <div class="card-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>PO No</th>
+                                            <th>PO Date</th>
+                                            <th>Store</th>
+                                            <th>Customer</th>
+                                            <th>Receipt Date</th>
+                                            <th>Total Item</th>
+                                            <th>Total Qty</th>
+                                            <th>Status</th>
+                                            <th>Created By</th>
+                                            <th style="width:130px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="poBody">
+                                        <tr><td colspan="10" style="text-align:center;padding:24px;color:#6b7280;">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="text-center text-muted small mt-4 mb-2">
+                    © 2026 Dolfin — Retail Portal
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+    <script>
+        // SESSION GUARD
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=retail";
+        const user = JSON.parse(sess);
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            new SidebarSystem("retail", "po_list").render();
+            renderTable();
+        });
+
+        // ===========================
+        // DEMO DATA
+        // ===========================
+        const DEMO_PO = [
+            {
+                poNo: "PO-0001", poDate: "2026-04-01", receiptDate: "2026-04-05", slot: "AM",
+                store: "Toko Melati", customer: "PT. Melati Retail Jaya",
+                status: "Draft", createdBy: "Jennie",
+                rows: [
+                    { itemCode: "BRD-001", itemName: "Butter Croissant", qty: 10 },
+                    { itemCode: "BRD-002", itemName: "Almond Croissant",  qty: 5  }
+                ]
+            },
+            {
+                poNo: "PO-0002", poDate: "2026-04-02", receiptDate: "2026-04-06", slot: "PM",
+                store: "Toko ABC", customer: "CV. ABC Sejahtera",
+                status: "Open", createdBy: "Admin",
+                rows: [
+                    { itemCode: "BRD-001", itemName: "Butter Croissant", qty: 4 },
+                    { itemCode: "BRD-005", itemName: "Sourdough Loaf",   qty: 3 }
+                ]
+            },
+            {
+                poNo: "PO-0003", poDate: "2026-04-03", receiptDate: "2026-04-07", slot: "AM",
+                store: "Toko Mawar", customer: "PT. Mawar Niaga Abadi",
+                status: "Closed", createdBy: "Admin",
+                rows: [
+                    { itemCode: "BRD-001", itemName: "Butter Croissant", qty: 8 },
+                    { itemCode: "BRD-004", itemName: "Cheese Danish",    qty: 6 }
+                ]
+            }
+        ];
+
+        function getPoList() {
+            const stored = JSON.parse(localStorage.getItem("dolfin_po_list") || "[]");
+            const storedNos = new Set(stored.map(p => p.poNo));
+            return [...stored, ...DEMO_PO.filter(d => !storedNos.has(d.poNo))];
+        }
+
+        function statusTag(s) {
+            const map = {
+                Draft:  '<span class="tag tag-gray">Draft</span>',
+                Open:   '<span class="tag tag-blue">Open</span>',
+                Closed: '<span class="tag tag-green">Closed</span>'
+            };
+            return map[s] || `<span class="tag tag-gray">${s}</span>`;
+        }
+
+        function renderTable() {
+            const fPoNo        = document.getElementById("fPoNo").value.toLowerCase();
+            const fStore       = document.getElementById("fStore").value.toLowerCase();
+            const fCustomer    = document.getElementById("fCustomer").value.toLowerCase();
+            const fStatus      = document.getElementById("fStatus").value;
+            const fPoDateFrom  = document.getElementById("fPoDateFrom").value;
+            const fPoDateTo    = document.getElementById("fPoDateTo").value;
+            const fReceiptFrom = document.getElementById("fReceiptFrom").value;
+            const fReceiptTo   = document.getElementById("fReceiptTo").value;
+
+            const all = getPoList();
+
+            // Update summary from full list (not filtered)
+            document.getElementById("sumTotal").textContent  = all.length;
+            document.getElementById("sumDraft").textContent  = all.filter(p => p.status === "Draft").length;
+            document.getElementById("sumOpen").textContent   = all.filter(p => p.status === "Open").length;
+            document.getElementById("sumClosed").textContent = all.filter(p => p.status === "Closed").length;
+
+            const list = all.filter(p => {
+                if (fPoNo     && !p.poNo.toLowerCase().includes(fPoNo))         return false;
+                if (fStore    && !p.store.toLowerCase().includes(fStore))        return false;
+                if (fCustomer && !p.customer.toLowerCase().includes(fCustomer)) return false;
+                if (fStatus   && p.status !== fStatus)                           return false;
+                if (fPoDateFrom  && p.poDate      < fPoDateFrom)                 return false;
+                if (fPoDateTo    && p.poDate      > fPoDateTo)                   return false;
+                if (fReceiptFrom && p.receiptDate < fReceiptFrom)                return false;
+                if (fReceiptTo   && p.receiptDate > fReceiptTo)                  return false;
+                return true;
+            });
+
+            const tbody = document.getElementById("poBody");
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:#6b7280;">Tidak ada data.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = list.map(p => {
+                const totalItem = p.rows ? p.rows.length : 0;
+                const totalQty  = p.rows ? p.rows.reduce((s, r) => s + (Number(r.qty) || 0), 0) : 0;
+                const viewUrl   = `retail_POView.html?poNo=${encodeURIComponent(p.poNo)}`;
+                const editBtn   = p.status === "Draft"
+                    ? `<button class="btn-xs btn-edit" onclick="window.location.href='retail_POAdd.html?poNo=${encodeURIComponent(p.poNo)}'">Edit</button>`
+                    : "";
+                return `
+                <tr>
+                    <td><a href="${viewUrl}" class="text-link">${p.poNo}</a></td>
+                    <td>${p.poDate || "-"}</td>
+                    <td>${p.store || "-"}</td>
+                    <td>${p.customer || "-"}</td>
+                    <td>${p.receiptDate || "-"}</td>
+                    <td>${totalItem}</td>
+                    <td>${totalQty}</td>
+                    <td>${statusTag(p.status)}</td>
+                    <td>${p.createdBy || "-"}</td>
+                    <td>
+                        <div class="action-group">
+                            <button class="btn-xs btn-open" onclick="window.location.href='${viewUrl}'">View</button>
+                            ${editBtn}
+                        </div>
+                    </td>
+                </tr>`;
+            }).join("");
+        }
+
+        function resetFilter() {
+            ["fPoNo","fStore","fCustomer","fStatus","fPoDateFrom","fPoDateTo","fReceiptFrom","fReceiptTo"]
+                .forEach(id => document.getElementById(id).value = "");
+            renderTable();
+        }
+    </script>
+</body>
+
+</html>

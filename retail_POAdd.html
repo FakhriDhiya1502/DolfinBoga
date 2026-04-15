@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retail | Add PO Internal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #222;
+        }
+
+        .page {
+            max-width: 100%;
+            border-radius: 12px;
+            background: #fff;
+            padding: 24px;
+        }
+
+        /* ---- Cards ---- */
+        .po-card {
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.06);
+            overflow: hidden;
+        }
+
+        .po-card-header {
+            padding: 13px 18px;
+            font-weight: 700;
+            font-size: 14px;
+            border-bottom: 1px solid #eef0f4;
+            background: #fafbfe;
+        }
+
+        .po-card-body { padding: 18px; }
+
+        /* ---- Field grid ---- */
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .field-full { grid-column: 1 / -1; }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-bottom: 6px;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            height: 38px;
+            border: 1px solid #d5dae3;
+            border-radius: 8px;
+            padding: 0 11px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        .field textarea {
+            height: auto;
+            padding: 8px 11px;
+            resize: vertical;
+        }
+
+        .field input[readonly],
+        .field textarea[readonly] {
+            background: #f8fafc;
+            color: #6b7280;
+        }
+
+        /* ---- Action toolbar ---- */
+        .po-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-po {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 0;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-save   { background: #15803d; color: #fff; }
+        .btn-submit { background: #2563eb; color: #fff; }
+        .btn-back   { background: #e5e7eb; color: #374151; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+
+        /* ---- Item table ---- */
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #edf0f5;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f9fafc;
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        tbody tr:hover { background: #fafcff; }
+
+        td input.cell-input {
+            width: 100%;
+            height: 34px;
+            border: 1px solid #d5dae3;
+            border-radius: 6px;
+            padding: 0 8px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        td input.cell-input[readonly] {
+            background: #f8fafc;
+            color: #374151;
+        }
+
+        td input.cell-qty {
+            width: 90px;
+        }
+
+        .btn-del-row {
+            padding: 5px 10px;
+            border: 0;
+            border-radius: 6px;
+            background: #fee2e2;
+            color: #b91c1c;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* ---- Load Forecast button ---- */
+        .btn-load {
+            padding: 9px 16px;
+            border-radius: 8px;
+            border: 0;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            background: #0ea5e9;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-load:disabled {
+            background: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* ---- Item sub-toolbar ---- */
+        .item-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .btn-add-row {
+            padding: 8px 14px;
+            border: 1px dashed #2563eb;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* ---- Banner ---- */
+        .banner {
+            display: none;
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .banner.show { display: block; }
+        .banner.info    { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+        .banner.success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .banner.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        @media (max-width: 900px) {
+            .field-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .field-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="retail_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Retail Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-primary fw-bold">
+                        <i class="bi bi-file-earmark-plus me-2"></i>Add PO Internal
+                    </h4>
+                </div>
+
+                <div class="page shadow-sm">
+
+                    <!-- Banner -->
+                    <div id="banner" class="banner"></div>
+
+                    <!-- Toolbar -->
+                    <div class="po-toolbar">
+                        <a href="retail_POList.html" class="btn-po btn-back">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                        <div class="d-flex gap-2">
+                            <button class="btn-po btn-save" onclick="saveDraft()">
+                                <i class="bi bi-floppy me-1"></i> Save Draft
+                            </button>
+                            <button class="btn-po btn-submit" onclick="submitPO()">
+                                <i class="bi bi-send me-1"></i> Submit
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Header Information -->
+                    <div class="po-card">
+                        <div class="po-card-header">Header Information</div>
+                        <div class="po-card-body">
+                            <div class="field-grid">
+
+                                <div class="field">
+                                    <label>PO No</label>
+                                    <input id="poNo" value="AUTO" readonly>
+                                </div>
+
+                                <div class="field">
+                                    <label>PO Date</label>
+                                    <input id="poDate" type="date">
+                                </div>
+
+                                <div class="field">
+                                    <label>Store</label>
+                                    <select id="storeSelect" onchange="onStoreChange()">
+                                        <option value="">-- Select Store --</option>
+                                        <option value="STR001">STR001 - Toko Melati</option>
+                                        <option value="STR002">STR002 - Toko Mawar</option>
+                                        <option value="STR003">STR003 - Toko Anggrek</option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label>Customer</label>
+                                    <input id="customerInput" readonly placeholder="Auto-filled by Store">
+                                </div>
+
+                                <div class="field">
+                                    <label>Receipt Date</label>
+                                    <input id="receiptDate" type="date" oninput="onReceiptDateChange()">
+                                </div>
+
+                                <div class="field">
+                                    <label>Slot</label>
+                                    <select id="slotSelect">
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+
+                                <div class="field field-full">
+                                    <label>Remarks</label>
+                                    <textarea id="remarks" rows="2" placeholder="Optional notes..."></textarea>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detail Items -->
+                    <div class="po-card">
+                        <div class="po-card-header">Detail Item</div>
+                        <div class="po-card-body">
+
+                            <div class="item-toolbar">
+                                <button class="btn-add-row" onclick="addBlankRow()">
+                                    <i class="bi bi-plus-circle me-1"></i> Add Row
+                                </button>
+                                <button id="btnLoadForecast" class="btn-load" disabled onclick="loadForecast()">
+                                    <i class="bi bi-cloud-download me-1"></i> Load Forecast
+                                </button>
+                            </div>
+
+                            <div class="table-wrap">
+                                <table id="itemTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:44px;">#</th>
+                                            <th style="min-width:120px;">Item Code</th>
+                                            <th style="min-width:200px;">Item Name</th>
+                                            <th style="width:110px;">Qty</th>
+                                            <th style="width:56px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itemBody">
+                                        <tr id="emptyRow">
+                                            <td colspan="5" class="text-center text-muted py-4" style="font-size:13px;">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                Pilih Store &amp; Receipt Date lalu klik <strong>Load Forecast</strong>, atau tambah baris manual.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="text-center text-muted small mt-4 mb-2">
+                    © 2026 Dolfin — Retail Portal
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+    <script>
+        // =========================
+        // SESSION GUARD
+        // =========================
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=retail";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        // =========================
+        // SIDEBAR
+        // =========================
+        document.addEventListener("DOMContentLoaded", () => {
+            new SidebarSystem("retail", "po_list").render();
+        });
+
+        // =========================
+        // STORE → CUSTOMER MAP
+        // =========================
+        const STORE_MAP = {
+            STR001: { name: "Toko Melati",  customer: "PT. Melati Retail Jaya" },
+            STR002: { name: "Toko Mawar",   customer: "PT. Mawar Niaga Abadi" },
+            STR003: { name: "Toko Anggrek", customer: "PT. Anggrek Pangan Sentosa" }
+        };
+
+        function onStoreChange() {
+            const key = document.getElementById("storeSelect").value;
+            const cust = key ? STORE_MAP[key].customer : "";
+            document.getElementById("customerInput").value = cust;
+            updateLoadBtn();
+        }
+
+        function onReceiptDateChange() {
+            updateLoadBtn();
+        }
+
+        function updateLoadBtn() {
+            const hasDate  = !!document.getElementById("receiptDate").value;
+            const hasStore = !!document.getElementById("storeSelect").value;
+            document.getElementById("btnLoadForecast").disabled = !(hasDate && hasStore);
+        }
+
+        // Day-of-week index → forecast key prefix
+        const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+
+        function loadForecast() {
+            const storeKey   = document.getElementById("storeSelect").value;
+            const receiptRaw = document.getElementById("receiptDate").value;
+            const slot       = document.getElementById("slotSelect").value.toLowerCase();
+
+            if (!storeKey || !receiptRaw) return;
+
+            const date    = new Date(receiptRaw + "T00:00:00");
+            const slotKey = `${DAY_KEYS[date.getDay()]}_${slot}`; // e.g. "wed_am"
+            const storeName = STORE_MAP[storeKey] ? STORE_MAP[storeKey].name : storeKey;
+            const dayLabel  = date.toLocaleDateString("id-ID", { weekday: "long" });
+
+            // Baca dari localStorage dolfin_forecast_list
+            const forecastList = JSON.parse(localStorage.getItem("dolfin_forecast_list") || "[]");
+
+            // Ambil semua forecast dokumen untuk store ini (status Active)
+            const storeDocs = forecastList.filter(d => d.store === storeKey && d.status === "Active");
+
+            if (storeDocs.length === 0) {
+                showBanner(`Tidak ada forecast aktif untuk ${storeName}. Pastikan sudah di-save di menu Forecast.`, "info");
+                return;
+            }
+
+            // Gabungkan semua rows dari semua product group, ambil qty untuk slotKey
+            const itemMap = {};
+            storeDocs.forEach(doc => {
+                (doc.rows || []).forEach(item => {
+                    const qty = Number(item[slotKey] || 0);
+                    if (qty <= 0) return;
+                    if (itemMap[item.itemCode]) {
+                        itemMap[item.itemCode].qty += qty;
+                    } else {
+                        itemMap[item.itemCode] = { itemCode: item.itemCode, itemName: item.itemName, qty };
+                    }
+                });
+            });
+
+            const rows = Object.values(itemMap);
+            if (rows.length === 0) {
+                showBanner(`Tidak ada forecast untuk ${storeName} — ${dayLabel} ${slot.toUpperCase()}.`, "info");
+                return;
+            }
+
+            renderRows(rows);
+            showBanner(`${rows.length} item dimuat dari forecast ${storeName} — ${dayLabel} ${slot.toUpperCase()}.`, "success");
+        }
+
+        // =========================
+        // ITEM TABLE
+        // =========================
+        let rowCounter = 0;
+
+        function renderRows(rows) {
+            const tbody = document.getElementById("itemBody");
+            tbody.innerHTML = "";
+            rows.forEach(r => appendRow(r.itemCode, r.itemName, r.qty));
+        }
+
+        function addBlankRow() {
+            removeEmptyPlaceholder();
+            appendRow("", "", "");
+        }
+
+        function appendRow(code, name, qty) {
+            removeEmptyPlaceholder();
+            rowCounter++;
+            const id = rowCounter;
+            const tbody = document.getElementById("itemBody");
+            const tr = document.createElement("tr");
+            tr.id = `row-${id}`;
+            tr.innerHTML = `
+                <td class="text-muted">${tbody.rows.length + 1}</td>
+                <td><input class="cell-input" value="${code}" placeholder="Item code"></td>
+                <td><input class="cell-input" value="${name}" placeholder="Item name"></td>
+                <td><input class="cell-input cell-qty" type="number" min="0" value="${qty}" placeholder="0"></td>
+                <td><button class="btn-del-row" onclick="deleteRow('row-${id}')"><i class="bi bi-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+            renumberRows();
+        }
+
+        function deleteRow(rowId) {
+            const tr = document.getElementById(rowId);
+            if (tr) tr.remove();
+            renumberRows();
+            if (document.getElementById("itemBody").rows.length === 0) {
+                showEmptyPlaceholder();
+            }
+        }
+
+        function renumberRows() {
+            const rows = document.querySelectorAll("#itemBody tr[id^='row-']");
+            rows.forEach((tr, i) => { tr.cells[0].textContent = i + 1; });
+        }
+
+        function removeEmptyPlaceholder() {
+            const ep = document.getElementById("emptyRow");
+            if (ep) ep.remove();
+        }
+
+        function showEmptyPlaceholder() {
+            const tbody = document.getElementById("itemBody");
+            tbody.innerHTML = `
+                <tr id="emptyRow">
+                    <td colspan="5" class="text-center text-muted py-4" style="font-size:13px;">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Pilih Store &amp; Receipt Date lalu klik <strong>Load Forecast</strong>, atau tambah baris manual.
+                    </td>
+                </tr>`;
+        }
+
+        // =========================
+        // PO DEADLINE CHECK
+        // =========================
+        function checkPoDeadline(receiptDateStr) {
+            const settings = (() => {
+                try { return JSON.parse(localStorage.getItem('dolfin_platform_settings') || '{}'); } catch(e) { return {}; }
+            })();
+
+            if (settings.poDeadlineEnabled === false) return null; // fitur dimatikan
+
+            const days = settings.poDeadlineDays ?? 2;
+            const time = settings.poDeadlineTime ?? '15:00';
+
+            if (!receiptDateStr) return null;
+
+            // Hitung deadline = receiptDate - days hari, pada jam time
+            const [hh, mm] = time.split(':').map(Number);
+            const receiptDate = new Date(receiptDateStr + 'T00:00:00');
+            const deadline = new Date(receiptDate);
+            deadline.setDate(deadline.getDate() - days);
+            deadline.setHours(hh, mm, 0, 0);
+
+            const now = new Date();
+            if (now > deadline) {
+                const deadlineStr = deadline.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                    + ' pukul ' + time;
+                return `Batas input PO untuk receipt date ini sudah lewat (deadline: ${deadlineStr}).`;
+            }
+            return null;
+        }
+
+        // =========================
+        // SAVE / SUBMIT
+        // =========================
+        function generateNo(prefix) {
+            const now = new Date();
+            const ym  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}`;
+            const seq = String(Math.floor(Math.random()*9000)+1000);
+            return `${prefix}-${ym}-${seq}`;
+        }
+
+        function collectData() {
+            const rows = [];
+            document.querySelectorAll("#itemBody tr[id^='row-']").forEach(tr => {
+                const inputs = tr.querySelectorAll("input");
+                rows.push({ itemCode: inputs[0].value, itemName: inputs[1].value, qty: Number(inputs[2].value) || 0 });
+            });
+            const storeEl = document.getElementById("storeSelect");
+            return {
+                poNo:        document.getElementById("poNo").value,
+                poDate:      document.getElementById("poDate").value,
+                store:       storeEl.options[storeEl.selectedIndex]?.text || "",
+                storeKey:    storeEl.value,
+                customer:    document.getElementById("customerInput").value,
+                receiptDate: document.getElementById("receiptDate").value,
+                slot:        document.getElementById("slotSelect").value,
+                remarks:     document.getElementById("remarks").value,
+                rows
+            };
+        }
+
+        function saveDraft() {
+            const data = collectData();
+            const deadlineErr = checkPoDeadline(data.receiptDate);
+            if (deadlineErr) { showBanner(deadlineErr, "error"); return; }
+            // Generate PO No if still AUTO
+            if (data.poNo === "AUTO") {
+                data.poNo = generateNo("PO");
+                document.getElementById("poNo").value = data.poNo;
+            }
+            const soList = JSON.parse(localStorage.getItem("dolfin_so_list") || "[]");
+            // update or skip existing draft for this PO
+            const existing = soList.findIndex(s => s.sourcePoNo === data.poNo);
+            const draftSO = buildSO(data, "Draft");
+            if (existing >= 0) soList[existing] = draftSO; else soList.unshift(draftSO);
+            localStorage.setItem("dolfin_so_list", JSON.stringify(soList));
+            upsertPoList({ ...data, status: "Draft", createdBy: user.name || "User" });
+            showBanner("Draft berhasil disimpan. SO Draft otomatis dibuat di Distributor.", "success");
+            setTimeout(() => window.location.href = "retail_POList.html", 1000);
+        }
+
+        function submitPO() {
+            const data = collectData();
+            if (!data.poDate)       { showBanner("PO Date wajib diisi.", "error"); return; }
+            const deadlineErr = checkPoDeadline(data.receiptDate);
+            if (deadlineErr) { showBanner(deadlineErr, "error"); return; }
+            if (!data.storeKey)     { showBanner("Store wajib dipilih.", "error"); return; }
+            if (!data.receiptDate)  { showBanner("Receipt Date wajib diisi.", "error"); return; }
+            if (data.rows.length === 0) { showBanner("Minimal 1 item harus diisi.", "error"); return; }
+
+            // Assign PO No
+            if (data.poNo === "AUTO") {
+                data.poNo = generateNo("PO");
+                document.getElementById("poNo").value = data.poNo;
+            }
+
+            // Save PO
+            upsertPoList({ ...data, status: "Open", createdBy: user.name || "User" });
+
+            // Auto-create Draft SO in Distributor
+            const soList = JSON.parse(localStorage.getItem("dolfin_so_list") || "[]");
+            const existing = soList.findIndex(s => s.sourcePoNo === data.poNo);
+            const newSO = buildSO(data, "Draft");
+            if (existing >= 0) soList[existing] = newSO; else soList.unshift(newSO);
+            localStorage.setItem("dolfin_so_list", JSON.stringify(soList));
+
+            showBanner(`PO ${data.poNo} berhasil di-submit. SO Draft ${newSO.soNo} otomatis dibuat di Distributor.`, "success");
+            setTimeout(() => window.location.href = "retail_POList.html", 1000);
+        }
+
+        function upsertPoList(po) {
+            const list = JSON.parse(localStorage.getItem("dolfin_po_list") || "[]");
+            const idx  = list.findIndex(p => p.poNo === po.poNo);
+            if (idx >= 0) list[idx] = po; else list.unshift(po);
+            localStorage.setItem("dolfin_po_list", JSON.stringify(list));
+        }
+
+        function buildSO(po, status) {
+            const totalQty = po.rows.reduce((s, r) => s + (Number(r.qty) || 0), 0);
+            return {
+                soNo:         generateNo("SO"),
+                soDate:       po.poDate,        // SO Date = PO Date
+                deliveryDate: po.receiptDate,   // Delivery Date = Receipt Date
+                store:        po.store,         // "STR001 - Toko Melati"
+                storeName:    STORE_MAP[po.storeKey] ? STORE_MAP[po.storeKey].name : po.store,
+                storeCode:    po.storeKey || '',
+                customer:     po.customer,
+                customerName: po.customer,
+                slot:         po.slot,
+                type:         "FROM_PO",
+                totalQty:     totalQty,
+                status:       status,
+                sourcePoNo:   po.poNo,
+                notes:        po.remarks || "",
+                lines:        po.rows.map(r => ({ ...r, uom: "PCS", source: "PO" }))
+            };
+        }
+
+        // =========================
+        // BANNER
+        // =========================
+        function showBanner(msg, type = "info") {
+            const el = document.getElementById("banner");
+            el.className = `banner show ${type}`;
+            el.textContent = msg;
+            clearTimeout(showBanner._t);
+            showBanner._t = setTimeout(() => { el.className = "banner"; el.textContent = ""; }, 4000);
+        }
+
+        // Ambil PO deadline settings dari localStorage
+        function getPoSettings() {
+            try { return JSON.parse(localStorage.getItem('dolfin_platform_settings') || '{}'); } catch(e) { return {}; }
+        }
+
+        // Min Receipt Date = hari ini + N hari (dari setting)
+        // Jika sudah lewat jam cutoff hari ini, tambah 1 hari lagi
+        function calcMinReceiptDate() {
+            const s = getPoSettings();
+            console.log('[PO Deadline] settings:', JSON.stringify({ enabled: s.poDeadlineEnabled, days: s.poDeadlineDays, time: s.poDeadlineTime }));
+            if (s.poDeadlineEnabled === false) return null;
+
+            const days = Math.max(1, Number(s.poDeadlineDays ?? 2));
+            const [hh, mm] = (s.poDeadlineTime ?? '15:00').split(':').map(Number);
+
+            const now = new Date();
+            const cutoff = new Date(); cutoff.setHours(hh, mm, 0, 0);
+
+            const min = new Date(); min.setHours(0, 0, 0, 0);
+            min.setDate(min.getDate() + days + (now > cutoff ? 1 : 0));
+
+            // Pakai local date (bukan toISOString yg UTC) biar timezone tidak geser tanggal
+            const y = min.getFullYear();
+            const m = String(min.getMonth() + 1).padStart(2, '0');
+            const d = String(min.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        // Set today as default PO Date, dan set min Receipt Date
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("poDate").value = new Date().toISOString().split("T")[0];
+
+            const minDate = calcMinReceiptDate();
+            const receiptEl = document.getElementById("receiptDate");
+            if (minDate) {
+                receiptEl.min = minDate;
+                // Blok juga kalau user ketik manual di luar range
+                receiptEl.addEventListener("change", () => {
+                    if (receiptEl.value && receiptEl.value < minDate) {
+                        showBanner(`Receipt Date minimal ${minDate} (hari ini + ${getPoSettings().poDeadlineDays ?? 2} hari).`, "error");
+                        receiptEl.value = "";
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

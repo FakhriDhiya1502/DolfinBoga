@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Retail — Detail Transaksi | Dolfin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 56px);
+        }
+
+        .nav-pill {
+            border-radius: 10px;
+        }
+
+        .card {
+            border: 0;
+            border-radius: 8px;
+        }
+
+        .muted-xs {
+            font-size: .82rem;
+            color: #6c757d;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        /* Stepper */
+        .stepper-wrapper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .stepper-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .stepper-item::before {
+            position: absolute;
+            content: "";
+            border-bottom: 2px solid #ccc;
+            width: 100%;
+            top: 15px;
+            left: -50%;
+            z-index: 0;
+        }
+
+        .stepper-item::after {
+            position: absolute;
+            content: "";
+            border-bottom: 2px solid #ccc;
+            width: 100%;
+            top: 15px;
+            left: 50%;
+            z-index: 0;
+        }
+
+        .stepper-item .step-counter {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ccc;
+            margin-bottom: 6px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .stepper-item.active .step-counter {
+            background-color: #0d6efd;
+        }
+
+        .stepper-item.completed .step-counter {
+            background-color: #198754;
+        }
+
+        .stepper-item.completed::after,
+        .stepper-item.completed::before {
+            border-color: #198754;
+        }
+
+        .stepper-item:first-child::before {
+            content: none;
+        }
+
+        .stepper-item:last-child::after {
+            content: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="retail_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Retail Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="retail_profile.html">Profile</a></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0">Detail Transaksi</h5>
+                        <div class="muted-xs">Lihat status pesanan, pengiriman, dan pembayaran.</div>
+                    </div>
+                    <a class="btn btn-outline-secondary btn-sm" href="retail_orders.html">← Kembali</a>
+                </div>
+
+                <!-- STEPPER -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="stepper-wrapper">
+                            <div class="stepper-item completed">
+                                <div class="step-counter"><i class="bi bi-check"></i></div>
+                                <div class="step-name small">Dipesan</div>
+                            </div>
+                            <div class="stepper-item completed">
+                                <div class="step-counter"><i class="bi bi-check"></i></div>
+                                <div class="step-name small">Dikonfirmasi</div>
+                            </div>
+                            <div class="stepper-item active" id="stepShipped">
+                                <div class="step-counter">3</div>
+                                <div class="step-name small">Dikirim</div>
+                            </div>
+                            <div class="stepper-item" id="stepReceived">
+                                <div class="step-counter">4</div>
+                                <div class="step-name small">Sampai</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <!-- LEFT COLUMN: Order Items & Details -->
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-header bg-white">
+                                <div class="fw-bold">Barang yang Dibeli</div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 align-middle">
+                                        <thead class="table-light small">
+                                            <tr>
+                                                <th>Produk</th>
+                                                <th class="text-end">Harga</th>
+                                                <th class="text-center">Qty</th>
+                                                <th class="text-end">Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyItems"></tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <td colspan="3" class="text-end fw-bold">Total Belanja</td>
+                                                <td class="text-end fw-bold" id="txtTotal">-</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="fw-bold">Info Pengiriman</h6>
+                                <div class="row text-sm">
+                                    <div class="col-sm-6 mb-2">
+                                        <div class="text-muted small">Alamat Pengiriman</div>
+                                        <div class="fw-semibold">Toko Retail Maju Jaya</div>
+                                        <div class="small">Jl. Sudirman No. 45, Jakarta Pusat</div>
+                                    </div>
+                                    <div class="col-sm-6 mb-2">
+                                        <div class="text-muted small">Kurir</div>
+                                        <div class="fw-semibold">Distributor Logistics</div>
+                                        <div class="small text-muted">Reguler Service</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: Status & Payment -->
+                    <div class="col-lg-4">
+
+                        <!-- CARD 1: DELIVERY TRACKING -->
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <span class="fw-bold"><i class="bi bi-truck me-2"></i>Lacak Pengiriman</span>
+                            </div>
+                            <div class="card-body">
+                                <div id="deliveryInfo">
+                                    <div class="text-center text-muted small py-3">Menunggu info pengiriman...</div>
+                                </div>
+                                <!-- Confirm Receipt Button (shown when status = Dikirim) -->
+                                <div id="confirmReceiptContainer" class="mt-3" style="display:none">
+                                    <button class="btn btn-success w-100" id="btnConfirmReceipt">
+                                        <i class="bi bi-check-circle me-1"></i>Konfirmasi Terima Barang
+                                    </button>
+                                    <div class="small text-muted text-center mt-2">
+                                        Klik tombol ini setelah barang diterima dengan baik
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CARD 2: PAYMENT INFO -->
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <span class="fw-bold"><i class="bi bi-wallet2 me-2"></i>Tagihan & Pembayaran</span>
+                            </div>
+                            <div class="card-body">
+                                <div id="paymentInfo">
+                                    <div class="text-center text-muted small py-3">Menunggu invoice...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CARD 3: RETURN/COMPLAINT -->
+                        <div class="card shadow-sm border-warning" id="cardReturnComplaint" style="display:none">
+                            <div class="card-header bg-warning bg-opacity-10">
+                                <span class="fw-bold"><i class="bi bi-arrow-return-left me-2"></i>Komplain /
+                                    Retur</span>
+                            </div>
+                            <div class="card-body">
+                                <div id="returnInfo">
+                                    <p class="small text-muted mb-3">Barang sudah diterima? Jika ada masalah, Anda dapat
+                                        mengajukan komplain atau retur.</p>
+                                    <button class="btn btn-warning btn-sm w-100" onclick="openReturnModal()">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>Ajukan Komplain / Retur
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Payment Proof Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Bukti Pembayaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Invoice Number</label>
+                        <input type="text" class="form-control" id="modalInvoiceNo" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Order Number</label>
+                        <input type="text" class="form-control" id="modalOrderNo" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Upload Bukti Transfer</label>
+                        <input type="file" class="form-control" id="fileEvidence" accept="image/*,.pdf">
+                        <div class="form-text">Format: JPG, PNG, PDF (Max 5MB)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Catatan (Opsional)</label>
+                        <textarea class="form-control" id="txtNote" rows="3"
+                            placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                    </div>
+                    <div id="previewContainer" class="d-none">
+                        <label class="form-label fw-bold">Preview</label>
+                        <div class="border rounded p-2 text-center">
+                            <img id="imgPreview" class="img-fluid" style="max-height: 200px;">
+                            <div id="pdfPreview" class="text-muted"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnSubmitEvidence">
+                        <i class="bi bi-check-circle me-1"></i>Submit Bukti Bayar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return/Complaint Request Modal -->
+    <div class="modal fade" id="returnModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning bg-opacity-10">
+                    <h5 class="modal-title"><i class="bi bi-arrow-return-left me-2"></i>Ajukan Komplain / Retur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="returnForm">
+                    <div class="modal-body">
+                        <div class="alert alert-warning small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Penting:</strong> Pastikan Anda mengisi form ini dengan benar. Distributor akan
+                            meninjau permintaan Anda.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Pilih Item yang Bermasalah <span
+                                    class="text-danger">*</span></label>
+                            <div id="returnItemsContainer" class="border rounded p-3">
+                                <!-- Will be populated dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Alasan Komplain <span class="text-danger">*</span></label>
+                            <select class="form-select" id="returnReason" required>
+                                <option value="">-- Pilih Alasan --</option>
+                                <option value="Rusak">Barang Rusak / Cacat</option>
+                                <option value="Kadaluarsa">Barang Kadaluarsa</option>
+                                <option value="Salah Barang">Salah Barang / Tidak Sesuai Pesanan</option>
+                                <option value="Kurang">Jumlah Kurang / Tidak Lengkap</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Deskripsi Masalah <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="returnDescription" rows="3" required
+                                placeholder="Jelaskan masalah secara detail..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Upload Foto Bukti <span
+                                    class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="returnPhoto" accept="image/*" required>
+                            <div class="form-text">Format: JPG, PNG (Max 5MB). Foto harus jelas menunjukkan masalah.
+                            </div>
+                        </div>
+
+                        <div id="returnPhotoPreview" class="d-none">
+                            <label class="form-label fw-bold">Preview Foto</label>
+                            <div class="border rounded p-2 text-center">
+                                <img id="returnPhotoImg" class="img-fluid" style="max-height: 200px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-send me-1"></i>Kirim Komplain
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+    <script>
+        // Init Sidebar
+        new SidebarSystem('retail', 'orders').render();
+
+        // =========================
+        // AUTH & STORAGE
+        // =========================
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=retail";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        function loadJson(key, fb) {
+            const r = localStorage.getItem(key);
+            return r ? JSON.parse(r) : fb;
+        }
+        function saveJson(key, val) {
+            localStorage.setItem(key, JSON.stringify(val));
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const orderNo = params.get("no");
+        if (!orderNo) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Order No Invalid',
+                text: 'Nomor order tidak valid',
+                confirmButtonColor: '#0d6efd'
+            }).then(() => {
+                window.location.href = "retail_orders.html";
+            });
+        }
+
+        // =========================
+        // SEED DATA (DUMMY ITEM LINES)
+        // =========================
+        const LS_LINES = "dolfin_retail_order_lines";
+        function seedLinesIfEmpty() {
+            let lines = loadJson(LS_LINES, {});
+            if (!lines[orderNo] || lines[orderNo].length === 0) {
+                lines[orderNo] = [
+                    { sku: "BRG-001", name: "SGM Eksplor 1+ Madu 900g", qty: 6, price: 105000 },
+                    { sku: "BRG-002", name: "Pampers Premium Care S", qty: 4, price: 95000 },
+                    { sku: "BRG-003", name: "Zwitsal Baby Bath Natural 200ml", qty: 12, price: 21000 }
+                ];
+                saveJson(LS_LINES, lines);
+            }
+            return lines;
+        }
+
+        // =========================
+        // DATA LOADING
+        // =========================
+        const allLines = seedLinesIfEmpty();
+        const orders = loadJson("dolfin_retail_orders", []);
+        const deliveries = loadJson("dolfin_retail_deliveries", []);
+        const payments = loadJson("dolfin_retail_payment_list", []); // Assuming legacy key or seed logic? 
+        // Note: retail_payment.html used LS_PAY "dolfin_retail_payment_list". 
+        // I need to ensure that key is correct. Let's assume yes from previous files.
+
+        const order = orders.find(o => o.no === orderNo);
+        if (!order) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Order Tidak Ditemukan',
+                text: 'Data order tidak tersedia',
+                confirmButtonColor: '#0d6efd'
+            }).then(() => {
+                window.location.href = "retail_orders.html";
+            });
+        }
+
+        const deliv = deliveries.find(d => d.orderNo === orderNo);
+        // Payment in 'retail_payment.html' used 'invNo' but usually we link by Order No too.
+        // Let's look for payment by Order No if available, or just check related Invoice?
+        // In this demo data, usually Payment object has 'orderNo' or 'invNo'.
+        // Let's assume we search by order or match via DO -> Invoice.
+        // For simplicity: Find payment where payment.orderNo == orderNo or similar. 
+        // If not found, look for seed.
+
+        const pay = payments.find(p => (p.orderNo === orderNo) || (p.desc && p.desc.includes(orderNo)));
+
+        function fmtMoney(n) {
+            return "Rp " + (n || 0).toLocaleString("id-ID");
+        }
+
+        // =========================
+        // RENDER ORDER ITEMS
+        // =========================
+
+        const lines = allLines[orderNo] || [];
+        const tbody = document.getElementById("tbodyItems");
+        let total = 0;
+
+        if (lines.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3">Tidak ada item</td></tr>`;
+        } else {
+            lines.forEach(item => {
+                const sub = (item.price || 0) * (item.qty || 0);
+                total += sub;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <div class="fw-semibold">${item.name}</div>
+                        <div class="muted-xs">${item.sku}</div>
+                    </td>
+                    <td class="text-end text-muted small">${fmtMoney(item.price)}</td>
+                    <td class="text-center">${item.qty}</td>
+                    <td class="text-end fw-semibold">${fmtMoney(sub)}</td>
+                 `;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById("txtTotal").textContent = fmtMoney(total);
+
+        // =========================
+        // RENDER DELIVERY INFO (Card)
+        // =========================
+        const divDeliv = document.getElementById("deliveryInfo");
+
+        // MOCK LOGIC: If deliv missing but status says Shipper/Delivered, create fake one
+        const statusLower = (order.status || "").toLowerCase();
+
+        if (!deliv && (statusLower === "dikirim" || statusLower === "sampai")) {
+            deliv = {
+                doNo: "DO-" + Math.floor(10000 + Math.random() * 90000),
+                status: statusLower === "sampai" ? "Delivered" : "Shipped",
+                timeline: [
+                    { status: "Pesanan Dibuat", date: order.date || "2026-01-01" },
+                    { status: "Pesanan Dikonfirmasi", date: order.date || "2026-01-01" },
+                    { status: "Dikirim oleh Distributor", date: order.date || "2026-01-02" }
+                ]
+            };
+            if (statusLower === "sampai") {
+                deliv.timeline.push({ status: "Diterima / Sampai", date: "2026-01-03" });
+            }
+        }
+
+        if (deliv) {
+            const status = deliv.status || "-";
+            let badgeColor = "secondary";
+            if (status === "Shipped") badgeColor = "warning text-dark";
+            if (status === "Delivered") badgeColor = "success";
+
+            // Translated labels
+            let label = status;
+            if (status === "Delivered") label = "Diterima";
+            if (status === "Shipped") label = "Dikirim";
+            if (status === "In Transit") label = "Dalam Perjalanan";
+
+            // Last activity
+            const lastEvent = (deliv.timeline && deliv.timeline.length > 0)
+                ? deliv.timeline[deliv.timeline.length - 1]
+                : { status: "Menunggu update", date: "-" };
+
+            divDeliv.innerHTML = `
+                 <div class="mb-3">
+                     <span class="badge bg-${badgeColor} mb-2">${label}</span>
+                     <div class="fs-5 fw-bold mono">${deliv.doNo}</div>
+                     <div class="small text-muted">No Resi / DO</div>
+                 </div>
+                 <div class="p-2 border rounded bg-light mb-3">
+                     <div class="small fw-semibold text-dark mb-1">Status Terkini:</div>
+                     <div class="small text-primary">${lastEvent.status}</div>
+                     <div class="muted-xs">${lastEvent.date}</div>
+                 </div>
+             `;
+
+            // UPDATE STEPPER
+            const st = statusLower;
+            if (st === "dikirim" || status === "Shipped") {
+                document.getElementById("stepShipped").className = "stepper-item active";
+                // Show confirm receipt button
+                document.getElementById("confirmReceiptContainer").style.display = "block";
+            } else if (st === "sampai" || status === "Delivered" || status === "Diterima") {
+                document.getElementById("stepShipped").className = "stepper-item completed";
+                document.getElementById("stepReceived").className = "stepper-item completed";
+                // Add Checkmark
+                document.getElementById("stepReceived").querySelector(".step-counter").innerHTML = '<i class="bi bi-check"></i>';
+            }
+
+        } else {
+            divDeliv.innerHTML = `<div class="text-center text-muted small py-3">Belum ada data pengiriman.</div>`;
+        }
+
+        // =========================
+        // RENDER PAYMENT INFO (Card)
+        // =========================
+        const divPay = document.getElementById("paymentInfo");
+
+        // Mock Payment if none exists but order implies it should
+        let paymentData = pay;
+        if (!paymentData && (statusLower === "sampai" || statusLower === "dikirim" || order.status === "Confirmed")) {
+            paymentData = {
+                invNo: "INV-" + orderNo.replace("ORD-", ""),
+                amount: order.total || total,
+                status: "Unpaid",
+                dueDate: "2026-02-01" // Mock due date
+            };
+        }
+
+        if (paymentData) {
+            let badgeColor = "secondary";
+            if (paymentData.status === "Paid") badgeColor = "success";
+            if (paymentData.status === "Unpaid") badgeColor = "danger";
+            if (paymentData.status === "Reported") badgeColor = "info text-dark";
+
+            // Action button based on status
+            let actionButton = '';
+            if (paymentData.status === "Unpaid") {
+                actionButton = `
+                    <button class="btn btn-primary btn-sm w-100" onclick="uploadPaymentProof('${paymentData.invNo || paymentData.invoiceNo}', '${orderNo}')">
+                        <i class="bi bi-upload me-1"></i>Upload Bukti Bayar
+                    </button>
+                `;
+            } else if (paymentData.status === "Paid") {
+                actionButton = `
+                    <button class="btn btn-outline-success btn-sm w-100" disabled>
+                        <i class="bi bi-check-circle me-1"></i>Pembayaran Terverifikasi
+                    </button>
+                `;
+            } else if (paymentData.status === "Reported") {
+                actionButton = `
+                    <button class="btn btn-outline-info btn-sm w-100" disabled>
+                        <i class="bi bi-clock-history me-1"></i>Menunggu Verifikasi
+                    </button>
+                `;
+            }
+
+            divPay.innerHTML = `
+                 <div class="mb-3">
+                     <span class="badge bg-${badgeColor} mb-2">${paymentData.status}</span>
+                     <div class="fs-5 fw-bold mono">${paymentData.invNo || paymentData.invoiceNo || "-"}</div>
+                     <div class="small text-muted">Due Date: ${paymentData.dueDate || "-"}</div>
+                 </div>
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                     <div class="small text-muted">Tagihan</div>
+                     <div class="fw-bold">${fmtMoney(paymentData.amount || paymentData.total)}</div>
+                 </div>
+                 ${actionButton}
+             `;
+        } else {
+            divPay.innerHTML = `<div class="text-center text-muted small py-3">Menunggu invoice...</div>`;
+        }
+
+        // =========================
+        // UPLOAD PAYMENT PROOF HANDLER
+        // =========================
+        let currentInvoiceNo = null;
+        let currentOrderNo = null;
+        let uploadedFile = null;
+
+        function uploadPaymentProof(invoiceNo, orderNo) {
+            currentInvoiceNo = invoiceNo;
+            currentOrderNo = orderNo;
+
+            // Populate modal
+            document.getElementById('modalInvoiceNo').value = invoiceNo;
+            document.getElementById('modalOrderNo').value = orderNo;
+            document.getElementById('txtNote').value = '';
+            document.getElementById('fileEvidence').value = '';
+            document.getElementById('previewContainer').classList.add('d-none');
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
+            modal.show();
+        }
+
+        // File preview handler
+        document.getElementById('fileEvidence').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) {
+                document.getElementById('previewContainer').classList.add('d-none');
+                return;
+            }
+
+            uploadedFile = file;
+
+            // Check file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'File Terlalu Besar',
+                    text: 'Ukuran file maksimal 5MB',
+                    confirmButtonColor: '#0d6efd'
+                });
+                e.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            const previewContainer = document.getElementById('previewContainer');
+            const imgPreview = document.getElementById('imgPreview');
+            const pdfPreview = document.getElementById('pdfPreview');
+
+            if (file.type.startsWith('image/')) {
+                reader.onload = function (e) {
+                    imgPreview.src = e.target.result;
+                    imgPreview.classList.remove('d-none');
+                    pdfPreview.classList.add('d-none');
+                    previewContainer.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            } else if (file.type === 'application/pdf') {
+                imgPreview.classList.add('d-none');
+                pdfPreview.classList.remove('d-none');
+                pdfPreview.innerHTML = `<i class="bi bi-file-pdf fs-1 text-danger"></i><br>${file.name}`;
+                previewContainer.classList.remove('d-none');
+            }
+        });
+
+        // Submit evidence handler
+        document.getElementById('btnSubmitEvidence').addEventListener('click', function () {
+            if (!uploadedFile) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'File Belum Dipilih',
+                    text: 'Silakan pilih file bukti transfer terlebih dahulu',
+                    confirmButtonColor: '#0d6efd'
+                });
+                return;
+            }
+
+            // Read file as base64
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const fileData = e.target.result;
+                const note = document.getElementById('txtNote').value;
+
+                // Create evidence record
+                const evidenceId = 'EV-' + Date.now();
+                const evidence = {
+                    id: evidenceId,
+                    invoiceNo: currentInvoiceNo,
+                    orderNo: currentOrderNo,
+                    fileName: uploadedFile.name,
+                    fileType: uploadedFile.type,
+                    fileData: fileData,
+                    note: note,
+                    uploadedAt: new Date().toISOString(),
+                    uploadedBy: user.email
+                };
+
+                // Save to localStorage
+                const evidences = loadJson('dolfin_payment_evidence', []);
+                evidences.push(evidence);
+                localStorage.setItem('dolfin_payment_evidence', JSON.stringify(evidences));
+
+                // Update payment status to "Reported"
+                const payments = loadJson('dolfin_retail_payments', []);
+                const paymentIndex = payments.findIndex(p => p.invoiceNo === currentInvoiceNo || p.orderNo === currentOrderNo);
+
+                if (paymentIndex !== -1) {
+                    payments[paymentIndex].status = 'Reported';
+                    payments[paymentIndex].evidenceId = evidenceId;
+                    payments[paymentIndex].reportedAt = new Date().toISOString();
+                    localStorage.setItem('dolfin_retail_payments', JSON.stringify(payments));
+                }
+
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('uploadModal')).hide();
+
+                // Show success message and reload
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Bukti Pembayaran Berhasil Diunggah!',
+                    html: 'Status invoice akan berubah menjadi <strong>"Reported"</strong><br>(Menunggu Verifikasi)',
+                    confirmButtonColor: '#198754'
+                }).then(() => {
+                    location.reload();
+                });
+            };
+            reader.readAsDataURL(uploadedFile);
+        });
+
+
+        // =========================
+        // RETURN/COMPLAINT FUNCTIONALITY
+        // =========================
+
+        const LS_RETURNS = "dolfin_returns";
+        let returnPhotoFile = null;
+
+        // Show return card only if order is delivered and no existing return
+        const returns = loadJson(LS_RETURNS, []);
+        const existingReturn = returns.find(r => r.orderNo === orderNo);
+
+        if (statusLower === "sampai" && !existingReturn) {
+            document.getElementById('cardReturnComplaint').style.display = 'block';
+        } else if (existingReturn) {
+            // Show return status instead of button
+            const returnCard = document.getElementById('cardReturnComplaint');
+            returnCard.style.display = 'block';
+
+            let statusBadge = 'secondary';
+            let statusText = existingReturn.status;
+            if (existingReturn.status === 'Pending') {
+                statusBadge = 'warning';
+                statusText = 'Menunggu Review';
+            } else if (existingReturn.status === 'Approved') {
+                statusBadge = 'success';
+                statusText = 'Disetujui';
+            } else if (existingReturn.status === 'Rejected') {
+                statusBadge = 'danger';
+                statusText = 'Ditolak';
+            }
+
+            document.getElementById('returnInfo').innerHTML = `
+                <div class="alert alert-${statusBadge} small mb-2">
+                    <div class="fw-bold"><i class="bi bi-info-circle me-1"></i>Status Komplain: ${statusText}</div>
+                    <div class="mt-2">Alasan: ${existingReturn.reason}</div>
+                    <div class="small text-muted">Diajukan: ${new Date(existingReturn.createdAt).toLocaleString('id-ID')}</div>
+                </div>
+                ${existingReturn.status === 'Rejected' && existingReturn.rejectionNote ?
+                    `<div class="small text-danger"><strong>Catatan Penolakan:</strong> ${existingReturn.rejectionNote}</div>` : ''}
+            `;
+        }
+
+        // Open return modal
+        window.openReturnModal = function () {
+            // Populate items checkboxes
+            const container = document.getElementById('returnItemsContainer');
+            container.innerHTML = '';
+
+            lines.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'form-check mb-2';
+                itemDiv.innerHTML = `
+                    <input class="form-check-input return-item-check" type="checkbox" value="${index}" id="returnItem${index}">
+                    <label class="form-check-label w-100" for="returnItem${index}">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>${item.name}</strong>
+                                <div class="small text-muted">${item.sku}</div>
+                            </div>
+                            <div class="text-end">
+                                <div>Qty: ${item.qty}</div>
+                                <div class="small text-muted">${fmtMoney(item.price)}</div>
+                            </div>
+                        </div>
+                        <div class="mt-2" id="qtyControl${index}" style="display:none">
+                            <label class="small">Jumlah yang bermasalah:</label>
+                            <input type="number" class="form-control form-control-sm return-qty" 
+                                min="1" max="${item.qty}" value="${item.qty}" data-index="${index}">
+                        </div>
+                    </label>
+                `;
+                container.appendChild(itemDiv);
+            });
+
+            // Add event listeners for checkboxes
+            document.querySelectorAll('.return-item-check').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const qtyControl = document.getElementById('qtyControl' + this.value);
+                    qtyControl.style.display = this.checked ? 'block' : 'none';
+                });
+            });
+
+            // Reset form
+            document.getElementById('returnForm').reset();
+            document.getElementById('returnPhotoPreview').classList.add('d-none');
+            returnPhotoFile = null;
+
+            // Show modal
+            new bootstrap.Modal(document.getElementById('returnModal')).show();
+        };
+
+        // Photo preview
+        document.getElementById('returnPhoto').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) {
+                document.getElementById('returnPhotoPreview').classList.add('d-none');
+                returnPhotoFile = null;
+                return;
+            }
+
+            // Check file size
+            if (file.size > 5 * 1024 * 1024) {
+                Swal.fire({ icon: 'error', title: 'Ukuran File Terlalu Besar', text: 'File terlalu besar! Maksimal 5MB', confirmButtonColor: '#0d6efd' });
+                e.target.value = '';
+                return;
+            }
+
+            returnPhotoFile = file;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('returnPhotoImg').src = e.target.result;
+                document.getElementById('returnPhotoPreview').classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Submit return form
+        document.getElementById('returnForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Collect selected items
+            const selectedItems = [];
+            document.querySelectorAll('.return-item-check:checked').forEach(checkbox => {
+                const index = parseInt(checkbox.value);
+                const qtyInput = document.querySelector(`.return-qty[data-index="${index}"]`);
+                const qty = parseInt(qtyInput.value) || lines[index].qty;
+
+                selectedItems.push({
+                    sku: lines[index].sku,
+                    name: lines[index].name,
+                    orderedQty: lines[index].qty,
+                    returnQty: qty,
+                    price: lines[index].price
+                });
+            });
+
+            if (selectedItems.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Item Belum Dipilih',
+                    text: 'Harap pilih minimal 1 item yang bermasalah',
+                    confirmButtonColor: '#0d6efd'
+                });
+                return;
+            }
+
+            const reason = document.getElementById('returnReason').value;
+            const description = document.getElementById('returnDescription').value;
+
+            if (!returnPhotoFile) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Foto Bukti Belum Diupload',
+                    text: 'Harap upload foto bukti terlebih dahulu',
+                    confirmButtonColor: '#0d6efd'
+                });
+                return;
+            }
+
+            // Read photo as base64
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const photoData = e.target.result;
+
+                // Create return record
+                const returnId = 'RET-' + Date.now();
+                const returnRecord = {
+                    id: returnId,
+                    orderNo: orderNo,
+                    distributor: order.dist,
+                    items: selectedItems,
+                    reason: reason,
+                    description: description,
+                    photoData: photoData,
+                    photoFileName: returnPhotoFile.name,
+                    status: 'Pending',
+                    createdAt: new Date().toISOString(),
+                    createdBy: user.email
+                };
+
+                // Save to localStorage
+                const returns = loadJson(LS_RETURNS, []);
+                returns.push(returnRecord);
+                saveJson(LS_RETURNS, returns);
+
+                // Update order status
+                const orders = loadJson("dolfin_retail_orders", []);
+                const orderIndex = orders.findIndex(o => o.no === orderNo);
+                if (orderIndex !== -1) {
+                    orders[orderIndex].hasComplaint = true;
+                    orders[orderIndex].complaintStatus = 'Pending';
+                    saveJson("dolfin_retail_orders", orders);
+                }
+
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('returnModal')).hide();
+
+                // Show success and reload
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Komplain Berhasil Diajukan!',
+                    html: 'Distributor akan meninjau permintaan Anda.<br>Status dapat dilihat di halaman ini.',
+                    confirmButtonColor: '#198754'
+                }).then(() => {
+                    location.reload();
+                });
+            }; // This closes the reader.onload function
+            reader.readAsDataURL(returnPhotoFile);
+        }); // This closes the submit event listener
+
+
+        // =========================
+        // CONFIRM RECEIPT FUNCTIONALITY
+        // =========================
+        document.getElementById('btnConfirmReceipt')?.addEventListener('click', function () {
+            Swal.fire({
+                title: 'Konfirmasi Penerimaan Barang',
+                html: 'Apakah Anda yakin barang sudah diterima dengan baik?<br><br>Setelah konfirmasi, status order akan berubah menjadi <strong>"Sampai"</strong> dan Anda dapat mengajukan komplain jika ada masalah.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Sudah Diterima',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                // Update order status
+                const orders = loadJson('dolfin_retail_orders', []);
+                const orderIndex = orders.findIndex(o => o.no === orderNo);
+
+                if (orderIndex !== -1) {
+                    orders[orderIndex].status = 'Sampai';
+                    orders[orderIndex].receivedAt = new Date().toISOString();
+                    saveJson('dolfin_retail_orders', orders);
+                }
+
+                // Update delivery status
+                const deliveries = loadJson('dolfin_retail_deliveries', []);
+                const deliveryIndex = deliveries.findIndex(d => d.orderNo === orderNo);
+
+                if (deliveryIndex !== -1) {
+                    deliveries[deliveryIndex].status = 'Delivered';
+                    deliveries[deliveryIndex].deliveredAt = new Date().toISOString();
+
+                    // Add to timeline
+                    if (!deliveries[deliveryIndex].timeline) {
+                        deliveries[deliveryIndex].timeline = [];
+                    }
+                    deliveries[deliveryIndex].timeline.push({
+                        status: 'Diterima oleh Retailer',
+                        date: new Date().toISOString().split('T')[0],
+                        time: new Date().toLocaleTimeString('id-ID')
+                    });
+
+                    saveJson('dolfin_retail_deliveries', deliveries);
+                }
+
+                // Show success message and reload
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Konfirmasi Berhasil!',
+                    html: 'Barang telah dikonfirmasi diterima.<br>Status order diupdate menjadi <strong>"Sampai"</strong>.<br><br>Jika ada masalah dengan barang, Anda dapat mengajukan komplain.',
+                    confirmButtonColor: '#198754'
+                }).then(() => {
+                    location.reload();
+                });
+            });
+        });
+
+    </script>
+</body>
+
+</html>

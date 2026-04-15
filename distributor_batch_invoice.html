@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch Invoice Detail — Dolfin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .card {
+            border: 0;
+            border-radius: 8px;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .evidence-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success sticky-top">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <span class="text-white small me-2" id="userInfo">User</span>
+                <a class="btn btn-sm btn-outline-light" href="distributor_batch_management.html">Back to Batch
+                    Invoices</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Batch Invoice <span class="mono text-primary" id="txtInvoiceNo">...</span></h4>
+                <div class="text-muted" id="txtRetailer">Retailer: Loading...</div>
+            </div>
+            <div id="statusBadge"></div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- LEFT COLUMN: Invoice Details -->
+            <div class="col-lg-7">
+
+                <!-- Invoice Summary -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <div class="fw-bold">Invoice Summary</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small text-muted">Invoice Date</label>
+                                <div class="fw-bold" id="txtInvoiceDate">-</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-muted">Due Date</label>
+                                <div class="fw-bold" id="txtDueDate">-</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-muted">Payment Terms</label>
+                                <div class="fw-bold" id="txtPaymentTerms">-</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-muted">Total Orders</label>
+                                <div class="fw-bold" id="txtOrderCount">-</div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row g-2">
+                            <div class="col-12 d-flex justify-content-between">
+                                <span class="text-muted">Subtotal</span>
+                                <span class="fw-bold" id="txtSubtotal">-</span>
+                            </div>
+                            <div class="col-12 d-flex justify-content-between">
+                                <span class="text-muted">Tax (PPN <span id="txtTaxPercent">11</span>%)</span>
+                                <span class="fw-bold" id="txtTax">-</span>
+                            </div>
+                            <div class="col-12 d-flex justify-content-between border-top pt-2">
+                                <span class="fw-bold">Grand Total</span>
+                                <span class="fw-bold text-success fs-5" id="txtGrandTotal">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders in Batch -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <div class="fw-bold">Orders in This Batch</div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light small">
+                                    <tr>
+                                        <th>Order No</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Amount</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Payment Actions -->
+            <div class="col-lg-5">
+
+                <!-- Payment Status -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <div class="fw-bold">Payment Status</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="small text-muted">Current Status</label>
+                            <div id="paymentStatusBadge">-</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-muted">Amount Paid</label>
+                            <div class="fw-bold" id="txtAmountPaid">Rp 0</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-muted">Outstanding</label>
+                            <div class="fw-bold text-danger" id="txtOutstanding">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Evidence -->
+                <div class="card shadow-sm border-info mb-4" id="cardPaymentEvidence" style="display:none">
+                    <div class="card-header bg-info bg-opacity-10">
+                        <div class="fw-bold">Payment Evidence</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="small text-muted">Uploaded By</label>
+                            <div class="fw-bold" id="evidenceUploader">-</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-muted">Upload Date</label>
+                            <div class="fw-bold" id="evidenceDate">-</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-muted">Note</label>
+                            <div id="evidenceNote">-</div>
+                        </div>
+                        <div class="mb-3">
+                            <img id="evidencePreview" class="evidence-preview border" onclick="viewFullEvidence()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Verification -->
+                <div class="card shadow-sm border-success" id="cardPaymentVerification" style="display:none">
+                    <div class="card-header bg-success bg-opacity-10">
+                        <div class="fw-bold">Verify Payment</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Verifying this payment will update all <span id="alertOrderCount">0</span> orders in this
+                            batch.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Amount Received</label>
+                            <input type="number" class="form-control" id="inpAmountReceived" placeholder="0">
+                            <small class="text-muted">Expected: <span id="expectedAmount">Rp 0</span></small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Payment Status</label>
+                            <select class="form-select" id="selPaymentStatus">
+                                <option value="Paid">Paid (Full Payment)</option>
+                                <option value="Partial">Partial Payment</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-success w-100" onclick="verifyPayment()">
+                            <i class="bi bi-check-circle me-1"></i>Verify & Update All Orders
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Evidence Modal -->
+    <div class="modal fade" id="evidenceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment Evidence</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="" id="modalEvidenceImg" style="max-width: 100%; max-height: 70vh;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // =========================
+        // UTILS
+        // =========================
+        const params = new URLSearchParams(window.location.search);
+        const invoiceNo = params.get("invoice");
+        if (!invoiceNo) { alert("Missing Invoice No"); window.location.href = "distributor_orders.html"; }
+
+        function loadJson(key, fb) {
+            try {
+                const r = localStorage.getItem(key);
+                return r ? JSON.parse(r) : fb;
+            } catch (e) { return fb; }
+        }
+        function saveJson(key, val) {
+            localStorage.setItem(key, JSON.stringify(val));
+        }
+        function fmtMoney(n) { return "Rp " + (n || 0).toLocaleString("id-ID"); }
+
+        // =========================
+        // DATA LOADING
+        // =========================
+        const batchInvoices = loadJson("dolfin_batch_invoices", []);
+        const orders = loadJson("dolfin_retail_orders", []);
+        const evidences = loadJson("dolfin_payment_evidence", []);
+
+        const batchInvoice = batchInvoices.find(b => b.invoiceNo === invoiceNo);
+        if (!batchInvoice) { alert("Batch Invoice not found"); window.location.href = "distributor_orders.html"; }
+
+        // Find evidence for this batch invoice
+        let evidence = evidences.find(e => e.invoiceNo === invoiceNo);
+
+        // =========================
+        // RENDERING
+        // =========================
+
+        // Header
+        document.getElementById("txtInvoiceNo").textContent = batchInvoice.invoiceNo;
+        document.getElementById("txtRetailer").textContent = "Retailer: " + batchInvoice.retailer;
+
+        // Status badge
+        const statusMap = {
+            "Unpaid": "bg-danger",
+            "Partial": "bg-warning text-dark",
+            "Paid": "bg-success"
+        };
+        const statusClass = statusMap[batchInvoice.status] || "bg-secondary";
+        document.getElementById("statusBadge").innerHTML =
+            `<span class="badge ${statusClass} fs-6">${batchInvoice.status}</span>`;
+
+        // Invoice Summary
+        document.getElementById("txtInvoiceDate").textContent = batchInvoice.invoiceDate;
+        document.getElementById("txtDueDate").textContent = batchInvoice.dueDate;
+        document.getElementById("txtPaymentTerms").textContent = "Net 30 days";
+        document.getElementById("txtOrderCount").textContent = batchInvoice.orderNos.length + " orders";
+        document.getElementById("txtSubtotal").textContent = fmtMoney(batchInvoice.subtotal);
+        document.getElementById("txtTaxPercent").textContent = batchInvoice.taxPercent || 11;
+        document.getElementById("txtTax").textContent = fmtMoney(batchInvoice.tax);
+        document.getElementById("txtGrandTotal").textContent = fmtMoney(batchInvoice.total);
+
+        // Orders Table
+        const tbody = document.getElementById("ordersTableBody");
+        batchInvoice.orderNos.forEach(orderNo => {
+            const order = orders.find(o => o.no === orderNo);
+            if (!order) return;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="mono fw-bold">${order.no}</td>
+                <td>${order.date}</td>
+                <td><span class="badge bg-secondary">${order.status}</span></td>
+                <td class="text-end">${fmtMoney(order.total)}</td>
+                <td class="text-end">
+                    <a href="distributor_order_detail.html?no=${order.no}" class="btn btn-sm btn-outline-primary">View</a>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Payment Status
+        const amountPaid = batchInvoice.paid || 0;
+        const outstanding = batchInvoice.total - amountPaid;
+
+        document.getElementById("paymentStatusBadge").innerHTML =
+            `<span class="badge ${statusClass} fs-5">${batchInvoice.status}</span>`;
+        document.getElementById("txtAmountPaid").textContent = fmtMoney(amountPaid);
+        document.getElementById("txtOutstanding").textContent = fmtMoney(outstanding);
+
+        // Payment Evidence
+        if (evidence) {
+            const cardEvidence = document.getElementById("cardPaymentEvidence");
+            cardEvidence.style.display = "block";
+
+            document.getElementById("evidenceUploader").textContent = batchInvoice.retailer;
+            document.getElementById("evidenceDate").textContent = evidence.uploadDate || "-";
+            document.getElementById("evidenceNote").textContent = evidence.note || "-";
+
+            if (evidence.imageData) {
+                document.getElementById("evidencePreview").src = evidence.imageData;
+            }
+        }
+
+        // Payment Verification
+        if (evidence && batchInvoice.status !== "Paid") {
+            const cardVerification = document.getElementById("cardPaymentVerification");
+            cardVerification.style.display = "block";
+
+            document.getElementById("alertOrderCount").textContent = batchInvoice.orderNos.length;
+            document.getElementById("expectedAmount").textContent = fmtMoney(batchInvoice.total);
+            document.getElementById("inpAmountReceived").value = batchInvoice.total;
+        }
+
+        // =========================
+        // FUNCTIONS
+        // =========================
+        function viewFullEvidence() {
+            if (!evidence || !evidence.imageData) return;
+            document.getElementById("modalEvidenceImg").src = evidence.imageData;
+            new bootstrap.Modal(document.getElementById('evidenceModal')).show();
+        }
+
+        function verifyPayment() {
+            const amountReceived = parseFloat(document.getElementById("inpAmountReceived").value) || 0;
+            const status = document.getElementById("selPaymentStatus").value;
+
+            if (amountReceived <= 0) {
+                alert("Please enter a valid amount!");
+                return;
+            }
+
+            if (!confirm(`Verify payment of ${fmtMoney(amountReceived)} for ${batchInvoice.orderNos.length} orders?\n\nThis will update all orders in this batch to "${status}".`)) {
+                return;
+            }
+
+            // Update batch invoice
+            batchInvoice.paid = amountReceived;
+            batchInvoice.status = status;
+
+            // Update all orders in batch
+            batchInvoice.orderNos.forEach(orderNo => {
+                const order = orders.find(o => o.no === orderNo);
+                if (order) {
+                    order.paymentStatus = status;
+                }
+            });
+
+            // Update evidence status
+            if (evidence) {
+                evidence.status = "VERIFIED";
+                evidence.verifiedDate = new Date().toISOString().split('T')[0];
+                evidence.verifiedAmount = amountReceived;
+            }
+
+            // Save all changes
+            saveJson("dolfin_batch_invoices", batchInvoices);
+            saveJson("dolfin_retail_orders", orders);
+            saveJson("dolfin_payment_evidence", evidences);
+
+            alert(`Payment verified successfully!\n\nAll ${batchInvoice.orderNos.length} orders have been updated to "${status}".`);
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>

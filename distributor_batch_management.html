@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch Invoice Management — Dolfin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 56px);
+        }
+
+        .nav-pill {
+            border-radius: 10px;
+        }
+
+        .card {
+            border: 0;
+            border-radius: 8px;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .kpi-card {
+            transition: transform 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+
+                <!-- KPI Cards -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="text-muted small">Total Batches</div>
+                                        <div class="fs-3 fw-bold" id="kpiTotalBatches">0</div>
+                                    </div>
+                                    <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
+                                        <i class="bi bi-receipt-cutoff"></i>
+                                    </div>
+                                </div>
+                                <div class="text-muted" style="font-size: 0.75rem;">All batch invoices</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="text-muted small">Unpaid Batches</div>
+                                        <div class="fs-3 fw-bold text-danger" id="kpiUnpaidBatches">0</div>
+                                    </div>
+                                    <div class="kpi-icon bg-danger bg-opacity-10 text-danger">
+                                        <i class="bi bi-exclamation-circle"></i>
+                                    </div>
+                                </div>
+                                <div class="text-muted" style="font-size: 0.75rem;">Awaiting payment</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="text-muted small">Total Orders</div>
+                                        <div class="fs-3 fw-bold" id="kpiTotalOrders">0</div>
+                                    </div>
+                                    <div class="kpi-icon bg-info bg-opacity-10 text-info">
+                                        <i class="bi bi-cart-check"></i>
+                                    </div>
+                                </div>
+                                <div class="text-muted" style="font-size: 0.75rem;">In all batches</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="text-muted small">Outstanding</div>
+                                        <div class="fs-3 fw-bold text-warning" id="kpiOutstanding">Rp 0</div>
+                                    </div>
+                                    <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
+                                        <i class="bi bi-cash-stack"></i>
+                                    </div>
+                                </div>
+                                <div class="text-muted" style="font-size: 0.75rem;">Total unpaid amount</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters & Actions -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Search Invoice</label>
+                                <input type="text" class="form-control" id="searchInvoice"
+                                    placeholder="Invoice number...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Retailer</label>
+                                <select class="form-select" id="filterRetailer">
+                                    <option value="">All Retailers</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Status</label>
+                                <select class="form-select" id="filterStatus">
+                                    <option value="">All Status</option>
+                                    <option value="Unpaid">Unpaid</option>
+                                    <option value="Partial">Partial</option>
+                                    <option value="Paid">Paid</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Date Range</label>
+                                <select class="form-select" id="filterDate">
+                                    <option value="">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                    <i class="bi bi-funnel me-1"></i>Apply
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Invoices Table -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="fw-bold mb-1">Batch Invoices</h5>
+                                <div class="text-muted small">Manage all batch invoices across retailers</div>
+                            </div>
+                            <div>
+                                <button class="btn btn-outline-success btn-sm" onclick="exportToExcel()">
+                                    <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th style="width:180px">Invoice No</th>
+                                    <th>Retailer</th>
+                                    <th style="width:100px">Orders</th>
+                                    <th style="width:120px">Invoice Date</th>
+                                    <th style="width:120px">Due Date</th>
+                                    <th class="text-end" style="width:150px">Total Amount</th>
+                                    <th class="text-end" style="width:150px">Outstanding</th>
+                                    <th style="width:120px">Status</th>
+                                    <th style="width:150px"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // =========================
+        // SESSION GUARD
+        // =========================
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=distributor";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        // =========================
+        // DATA LOADING
+        // =========================
+        function loadJson(key, fb) {
+            try {
+                const r = localStorage.getItem(key);
+                return r ? JSON.parse(r) : fb;
+            } catch (e) { return fb; }
+        }
+
+        let batchInvoices = loadJson("dolfin_batch_invoices", []);
+        const orders = loadJson("dolfin_retail_orders", []);
+
+        function rupiah(n) { return "Rp " + (n || 0).toLocaleString("id-ID"); }
+
+        function badgeStatus(status) {
+            const map = {
+                "Unpaid": "bg-danger",
+                "Partial": "bg-warning text-dark",
+                "Paid": "bg-success"
+            };
+            const cls = map[status] || "bg-secondary";
+            return `<span class="badge ${cls}">${status}</span>`;
+        }
+
+        // =========================
+        // RENDER KPI
+        // =========================
+        function renderKPI() {
+            const totalBatches = batchInvoices.length;
+            const unpaidBatches = batchInvoices.filter(b => b.status === "Unpaid" || b.status === "Partial").length;
+
+            let totalOrders = 0;
+            let outstanding = 0;
+
+            batchInvoices.forEach(b => {
+                totalOrders += b.orderNos.length;
+                if (b.status !== "Paid") {
+                    outstanding += (b.total - (b.paid || 0));
+                }
+            });
+
+            document.getElementById("kpiTotalBatches").textContent = totalBatches;
+            document.getElementById("kpiUnpaidBatches").textContent = unpaidBatches;
+            document.getElementById("kpiTotalOrders").textContent = totalOrders;
+            document.getElementById("kpiOutstanding").textContent = rupiah(outstanding);
+        }
+
+        // =========================
+        // POPULATE RETAILER FILTER
+        // =========================
+        function populateRetailerFilter() {
+            const retailers = [...new Set(batchInvoices.map(b => b.retailer))];
+            const select = document.getElementById("filterRetailer");
+
+            retailers.forEach(retailer => {
+                const option = document.createElement("option");
+                option.value = retailer;
+                option.textContent = retailer;
+                select.appendChild(option);
+            });
+        }
+
+        // =========================
+        // RENDER TABLE
+        // =========================
+        function renderTable(filteredBatches = null) {
+            const batches = filteredBatches || batchInvoices;
+            const tbody = document.getElementById("batchTableBody");
+            tbody.innerHTML = "";
+
+            if (batches.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-5">No batch invoices found.</td></tr>';
+                return;
+            }
+
+            batches.forEach(batch => {
+                const outstanding = batch.total - (batch.paid || 0);
+                const daysUntilDue = Math.ceil((new Date(batch.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+                const isOverdue = daysUntilDue < 0 && batch.status !== "Paid";
+
+                const tr = document.createElement("tr");
+                if (isOverdue) tr.classList.add("table-danger");
+
+                tr.innerHTML = `
+                    <td class="mono fw-bold">${batch.invoiceNo}</td>
+                    <td>${batch.retailer}</td>
+                    <td class="text-center">
+                        <span class="badge bg-secondary">${batch.orderNos.length}</span>
+                    </td>
+                    <td>${batch.invoiceDate}</td>
+                    <td>
+                        ${batch.dueDate}
+                        ${isOverdue ? '<span class="badge bg-danger ms-1">Overdue</span>' : ''}
+                    </td>
+                    <td class="text-end fw-bold">${rupiah(batch.total)}</td>
+                    <td class="text-end ${outstanding > 0 ? 'text-danger fw-bold' : 'text-muted'}">${rupiah(outstanding)}</td>
+                    <td>${badgeStatus(batch.status)}</td>
+                    <td class="text-end">
+                        <a href="distributor_batch_invoice.html?invoice=${encodeURIComponent(batch.invoiceNo)}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye me-1"></i>View
+                        </a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // =========================
+        // FILTERS
+        // =========================
+        function applyFilters() {
+            const searchTerm = document.getElementById("searchInvoice").value.toLowerCase();
+            const retailerFilter = document.getElementById("filterRetailer").value;
+            const statusFilter = document.getElementById("filterStatus").value;
+            const dateFilter = document.getElementById("filterDate").value;
+
+            let filtered = batchInvoices.filter(batch => {
+                // Search filter
+                const matchSearch = !searchTerm || batch.invoiceNo.toLowerCase().includes(searchTerm);
+
+                // Retailer filter
+                const matchRetailer = !retailerFilter || batch.retailer === retailerFilter;
+
+                // Status filter
+                const matchStatus = !statusFilter || batch.status === statusFilter;
+
+                // Date filter
+                let matchDate = true;
+                if (dateFilter) {
+                    const batchDate = new Date(batch.invoiceDate);
+                    const today = new Date();
+
+                    if (dateFilter === "today") {
+                        matchDate = batchDate.toDateString() === today.toDateString();
+                    } else if (dateFilter === "week") {
+                        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        matchDate = batchDate >= weekAgo;
+                    } else if (dateFilter === "month") {
+                        matchDate = batchDate.getMonth() === today.getMonth() &&
+                            batchDate.getFullYear() === today.getFullYear();
+                    }
+                }
+
+                return matchSearch && matchRetailer && matchStatus && matchDate;
+            });
+
+            renderTable(filtered);
+        }
+
+        // Add event listeners for real-time filtering
+        document.getElementById("searchInvoice").addEventListener("input", applyFilters);
+        document.getElementById("filterRetailer").addEventListener("change", applyFilters);
+        document.getElementById("filterStatus").addEventListener("change", applyFilters);
+        document.getElementById("filterDate").addEventListener("change", applyFilters);
+
+        // =========================
+        // EXPORT TO EXCEL
+        // =========================
+        function exportToExcel() {
+            alert("Export to Excel feature coming soon!\n\nThis will export all batch invoices with:\n- Invoice details\n- Retailer info\n- Payment status\n- Outstanding amounts");
+        }
+
+        // =========================
+        // INIT
+        // =========================
+        renderKPI();
+        populateRetailerFilter();
+        renderTable();
+    </script>
+    <script src="sidebar.js"></script>
+    <script>
+        // Init Sidebar
+        new SidebarSystem('distributor', 'batch').render();
+    </script>
+</body>
+
+</html>

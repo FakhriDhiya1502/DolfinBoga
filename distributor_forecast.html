@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Distributor — Forecast | Dolfin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #f4f6f9; font-family: Arial, Helvetica, sans-serif; }
+        .sidebar { min-height: calc(100vh - 56px); }
+        .nav-pill { border-radius: 10px; }
+        .card { border: 0; }
+        .muted-xs { font-size: .82rem; color: #6c757d; }
+        
+        /* Forecast Specific Styles */
+        :root {
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --line: #d9e0ea;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #2563eb;
+            --success: #15803d;
+            --danger: #b91c1c;
+            --changed: #fff7ed;
+            --zero: #f3f4f6;
+        }
+
+        .page { padding: 16px; background: white; border-radius: 10px; border: 1px solid var(--line); }
+
+        .toolbar, .f-card {
+            background: var(--card); border: 1px solid var(--line);
+            border-radius: 10px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+
+        .toolbar { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+        .title-wrap h1 { margin: 0; font-size: 20px; font-weight: bold; }
+        .title-wrap p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .actions button { border: 1px solid var(--line); background: white; padding: 9px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .actions button.primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .actions button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .grid-2 { display: grid; grid-template-columns: 1.7fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .f-card { padding: 14px; }
+        .f-card h2 { margin: 0 0 12px; font-size: 16px; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 12px; }
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label { font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+        .field input, .field select { border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; min-height: 38px; background: white; }
+        .field input[readonly] { background: #f8fafc; }
+
+        .info-stack { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .info-box { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: #fafafa; }
+        .info-box .label { color: var(--muted); font-size: 12px; margin-bottom: 6px; text-transform: uppercase; font-weight: 700; }
+
+        .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: white; }
+        #forecastTable { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 13px; }
+        #forecastTable th, #forecastTable td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 8px; text-align: center; white-space: nowrap; }
+        #forecastTable th { background: #f8fafc; position: sticky; top: 0; z-index: 3; }
+        #forecastTable th.sticky-col, #forecastTable td.sticky-col { position: sticky; left: 0; z-index: 2; background: white; text-align: left; min-width: 130px; max-width: 130px; }
+        #forecastTable th.sticky-col-2, #forecastTable td.sticky-col-2 { position: sticky; left: 130px; z-index: 2; background: white; text-align: left; min-width: 220px; max-width: 220px; }
+        #forecastTable td input.qty-input { width: 72px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; text-align: right; }
+        
+        tr.changed-row td { background: var(--changed); }
+        tr.zero-row td:not(.sticky-col):not(.sticky-col-2) { background: var(--zero); }
+
+        .sub-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .checkbox-inline { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+
+        .history-list { max-height: 360px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .history-item { padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+        .history-item:last-child { border-bottom: none; }
+        .history-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+        .banner { display: none; margin-bottom: 12px; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+        .banner.show { display: block; }
+        .banner.success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .banner.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .banner.info { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+
+        @media (max-width: 1200px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+        }
+        @media (max-width: 700px) {
+            .form-grid, .info-stack { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+            
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-success fw-bold"><i class="bi bi-graph-up-arrow me-2"></i>Forecast Management</h4>
+                </div>
+
+                <!-- Forecast Body Start -->
+                <div class="page shadow-sm">
+                    <div class="toolbar">
+                        <div class="title-wrap">
+                            <h1>Forecast Template</h1>
+                            <p>Maintain weekly forecast per toko, per product group, dengan split AM / PM.</p>
+                        </div>
+                        <div class="actions">
+                            <button id="btnBack" onclick="window.location.href='distributor_forecastlist.html'">Back to List</button>
+                            <button id="btnLoad">Load Items</button>
+                            <button id="btnCopy">Copy Template</button>
+                            <button id="btnSave" class="primary">Save</button>
+                            <button id="btnReset">Reset</button>
+                        </div>
+                    </div>
+
+                    <div id="banner" class="banner"></div>
+
+                    <div class="grid-2">
+                        <div class="f-card">
+                            <h2>Filter & Forecast Info</h2>
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label>Doc No</label>
+                                    <input type="text" id="docNo" value="FCT-20260401-001" readonly />
+                                </div>
+                                <div class="field">
+                                    <label for="storeSelect">Store</label>
+                                    <select id="storeSelect"></select>
+                                </div>
+                                <div class="field">
+                                    <label for="customerName">Customer Name</label>
+                                    <input type="text" id="customerName" readonly />
+                                </div>
+                                <div class="field">
+                                    <label for="groupSelect">Product Group Selector</label>
+                                    <select id="groupSelect"></select>
+                                </div>
+                                <div class="field">
+                                    <label for="currentUser">User</label>
+                                    <input type="text" id="currentUser" value="admin.forecast" readonly />
+                                </div>
+                                <div class="field">
+                                    <label>Effective From</label>
+                                    <input type="date" id="effFrom" value="2026-04-01" />
+                                </div>
+                                <div class="field">
+                                    <label>Effective To (Optional)</label>
+                                    <input type="date" id="effTo" value="" />
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div class="f-card" style="margin-bottom:14px;">
+                        <div class="sub-toolbar">
+                            <div style="font-weight:700;">Weekly Forecast Detail</div>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="toggleHideZero" /> Hide All Zero Rows
+                            </label>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="forecastTable">
+                                <thead>
+                                    <tr>
+                                        <th class="sticky-col">Item Code</th>
+                                        <th class="sticky-col-2">Item Name</th>
+                                        <th>Mon AM</th>
+                                        <th>Mon PM</th>
+                                        <th>Tue AM</th>
+                                        <th>Tue PM</th>
+                                        <th>Wed AM</th>
+                                        <th>Wed PM</th>
+                                        <th>Thu AM</th>
+                                        <th>Thu PM</th>
+                                        <th>Fri AM</th>
+                                        <th>Fri PM</th>
+                                        <th>Sat AM</th>
+                                        <th>Sat PM</th>
+                                        <th>Sun AM</th>
+                                        <th>Sun PM</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="forecastBody">
+                                    <tr>
+                                        <td colspan="16" style="padding:24px; color:#6b7280;">Pilih Store dan Product Group, lalu klik <b>Load Items</b>.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+                </div>
+                <!-- Forecast Body End -->
+
+                <!-- Footer -->
+                <div class="text-center text-muted small mt-4 mb-2">
+                    © 2026 Dolfin — Distributor Portal
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+
+    <script>
+        // =========================
+        // SESSION GUARD
+        // =========================
+        const sess = localStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=distributor";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            localStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        // =========================
+        // SIDEBAR INJECTION
+        // =========================
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = new SidebarSystem("distributor", "forecast");
+            sidebar.render();
+        });
+
+        // =========================
+        // FORECAST SYSTEM
+        // =========================
+        const dayKeys = [
+            'mon_am', 'mon_pm', 'tue_am', 'tue_pm', 'wed_am', 'wed_pm', 'thu_am', 'thu_pm',
+            'fri_am', 'fri_pm', 'sat_am', 'sat_pm', 'sun_am', 'sun_pm'
+        ];
+
+        const appState = {
+            stores: [
+                { code: 'STR001', name: 'Toko Melati', customerName: 'PT. Melati Retail Jaya' },
+                { code: 'STR002', name: 'Toko Mawar', customerName: 'PT. Mawar Niaga Abadi' },
+                { code: 'STR003', name: 'Toko Anggrek', customerName: 'PT. Anggrek Pangan Sentosa' }
+            ],
+            productGroups: [
+                { code: 'GRP-BREAD', name: 'Bread & Pastry' },
+                { code: 'GRP-DONUT', name: 'Donut & Cookie' }
+            ],
+            itemMaster: {
+                'GRP-BREAD': [
+                    { code: 'BRD-001', name: 'Butter Croissant' },
+                    { code: 'BRD-002', name: 'Almond Croissant' },
+                    { code: 'BRD-003', name: 'Pain Au Chocolat' },
+                    { code: 'BRD-004', name: 'Classic Baguette' },
+                    { code: 'BRD-005', name: 'Whole Wheat Loaf' }
+                ],
+                'GRP-DONUT': [
+                    { code: 'BRD-007', name: 'Chocolate Donut' },
+                    { code: 'BRD-008', name: 'Glazed Donut' },
+                    { code: 'BRD-015', name: 'Mini Palmier' }
+                ]
+            },
+            templates: {},
+            currentRows: [],
+        };
+
+        const els = {
+            storeSelect: document.getElementById('storeSelect'),
+            customerName: document.getElementById('customerName'),
+            groupSelect: document.getElementById('groupSelect'),
+            currentUser: document.getElementById('currentUser'),
+            forecastBody: document.getElementById('forecastBody'),
+            banner: document.getElementById('banner'),
+            toggleHideZero: document.getElementById('toggleHideZero'),
+            btnLoad: document.getElementById('btnLoad'),
+            btnCopy: document.getElementById('btnCopy'),
+            btnSave: document.getElementById('btnSave'),
+            btnReset: document.getElementById('btnReset')
+        };
+
+        function init() {
+            loadTemplatesFromStorage();
+            bindOptions();
+            bindEvents();
+        }
+
+        function loadTemplatesFromStorage() {
+            const list = JSON.parse(localStorage.getItem('dolfin_forecast_list') || '[]');
+            list.forEach(doc => {
+                const key = makeTemplateKey(doc.store, doc.group);
+                appState.templates[key] = doc.rows;
+                appState.docMeta = appState.docMeta || {};
+                appState.docMeta[key] = doc;
+            });
+        }
+
+        function generateDocNo() {
+            const list = JSON.parse(localStorage.getItem('dolfin_forecast_list') || '[]');
+            const today = new Date();
+            const dateStr = today.getFullYear().toString() +
+                String(today.getMonth() + 1).padStart(2, '0') +
+                String(today.getDate()).padStart(2, '0');
+            const same = list.filter(d => d.docNo && d.docNo.includes(dateStr));
+            const seq = String(same.length + 1).padStart(3, '0');
+            return `FCT-${dateStr}-${seq}`;
+        }
+
+        function createRow(code, name, overrides = {}) {
+            const row = { itemCode: code, itemName: name };
+            dayKeys.forEach(k => row[k] = 0);
+            Object.assign(row, overrides);
+            return row;
+        }
+
+        function bindOptions() {
+            els.storeSelect.innerHTML = '<option value="">-- Pilih Store --</option>' +
+                appState.stores.map(s => `<option value="${s.code}">${s.code} - ${s.name}</option>`).join('');
+
+            els.groupSelect.innerHTML = '<option value="">-- Pilih Product Group --</option>' +
+                appState.productGroups.map(g => `<option value="${g.code}">${g.code} - ${g.name}</option>`).join('');
+        }
+
+        function bindEvents() {
+            els.btnLoad.addEventListener('click', loadItems);
+            els.btnSave.addEventListener('click', saveTemplate);
+            els.btnReset.addEventListener('click', resetPage);
+            els.btnCopy.addEventListener('click', copyTemplate);
+            els.toggleHideZero.addEventListener('change', renderTable);
+            els.storeSelect.addEventListener('change', onStoreChanged);
+        }
+
+        function onStoreChanged() {
+            const selectedStore = appState.stores.find(s => s.code === els.storeSelect.value);
+            els.customerName.value = selectedStore ? selectedStore.customerName : '';
+        }
+
+        function makeTemplateKey(store, group) {
+            return `${store}__${group}`;
+        }
+
+        function loadItems() {
+            const store = els.storeSelect.value;
+            const group = els.groupSelect.value;
+            if (!store || !group) {
+                showBanner('Store dan Product Group wajib dipilih.', 'error');
+                return;
+            }
+
+            const key = makeTemplateKey(store, group);
+            const existing = appState.templates[key];
+            if (existing) {
+                appState.currentRows = JSON.parse(JSON.stringify(existing));
+                if (!appState.createdDate) {
+                    appState.createdDate = new Date();
+                    appState.createdBy = 'system.seed';
+                }
+                showBanner('Template existing berhasil dimuat.', 'info');
+            } else {
+                const items = appState.itemMaster[group] || [];
+                appState.currentRows = items.map(item => createRow(item.code, item.name));
+                showBanner('Item berdasarkan Product Group berhasil dimuat.', 'info');
+            }
+            renderTable();
+        }
+
+        function renderTable() {
+            const rows = appState.currentRows || [];
+            if (!rows.length) {
+                els.forecastBody.innerHTML = `
+          <tr>
+            <td colspan="16" style="padding:24px; color:#6b7280;">Belum ada data item.</td>
+          </tr>`;
+                return;
+            }
+
+            const hideZero = els.toggleHideZero.checked;
+            const visibleRows = rows.filter(r => !hideZero || !isAllZeroRow(r));
+
+            if (!visibleRows.length) {
+                els.forecastBody.innerHTML = `
+          <tr>
+            <td colspan="16" style="padding:24px; color:#6b7280;">Semua row bernilai 0 dan sedang disembunyikan.</td>
+          </tr>`;
+                return;
+            }
+
+            els.forecastBody.innerHTML = visibleRows.map((row, rowIndex) => {
+                const css = [row.__changed ? 'changed-row' : '', isAllZeroRow(row) ? 'zero-row' : ''].join(' ');
+                return `
+          <tr class="${css}">
+            <td class="sticky-col">${row.itemCode}</td>
+            <td class="sticky-col-2">${row.itemName}</td>
+            ${dayKeys.map(key => `
+              <td>
+                <input
+                  class="qty-input"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value="${row[key] ?? 0}"
+                  data-row-index="${rowIndex}"
+                  data-day-key="${key}"
+                />
+              </td>`).join('')}
+          </tr>`;
+            }).join('');
+
+            document.querySelectorAll('.qty-input').forEach(input => {
+                input.addEventListener('input', onQtyChanged);
+            });
+        }
+
+        function onQtyChanged(e) {
+            const input = e.target;
+            const rowIndex = Number(input.dataset.rowIndex);
+            const dayKey = input.dataset.dayKey;
+            const visibleRows = (appState.currentRows || []).filter(r => !els.toggleHideZero.checked || !isAllZeroRow(r));
+            const row = visibleRows[rowIndex];
+            if (!row) return;
+
+            const actualRow = appState.currentRows.find(r => r.itemCode === row.itemCode);
+            if (!actualRow) return;
+
+            const oldValue = Number(actualRow[dayKey] || 0);
+            const newValue = Math.max(0, Number(input.value || 0));
+            input.value = newValue;
+
+            if (oldValue !== newValue) {
+                actualRow[dayKey] = newValue;
+                actualRow.__changed = true;
+            }
+
+            renderTable();
+        }
+
+        function saveTemplate() {
+            const store = els.storeSelect.value;
+            const group = els.groupSelect.value;
+            if (!store || !group) {
+                showBanner('Store dan Product Group wajib dipilih sebelum save.', 'error');
+                return;
+            }
+            if (!appState.currentRows.length) {
+                showBanner('Belum ada item yang dimuat.', 'error');
+                return;
+            }
+
+            const hasNegative = appState.currentRows.some(row => dayKeys.some(key => Number(row[key]) < 0));
+            if (hasNegative) {
+                showBanner('Qty tidak boleh negatif.', 'error');
+                return;
+            }
+
+            const effFrom = document.getElementById('effFrom').value;
+            const effTo = document.getElementById('effTo').value;
+            if (!effFrom) {
+                showBanner('Effective From wajib diisi.', 'error');
+                return;
+            }
+            if (effFrom && effTo && effFrom > effTo) {
+                showBanner('Effective To tidak boleh lebih awal dari Effective From.', 'error');
+                return;
+            }
+            // Simulate overlap check
+            if (effFrom === '2026-04-02') {
+                showBanner('Terdapat dokumen Forecast aktif lain yang overlap dengan periode tanggal ini untuk Store dan Customer yang sama.', 'error');
+                return;
+            }
+
+            const key = makeTemplateKey(store, group);
+            const isNew = !appState.templates[key];
+            const cleanRows = appState.currentRows.map(stripUiFields);
+            appState.templates[key] = JSON.parse(JSON.stringify(cleanRows));
+            appState.currentRows.forEach(row => row.__changed = false);
+
+            const now = new Date();
+            appState.docMeta = appState.docMeta || {};
+            if (isNew || !appState.docMeta[key]) {
+                const storeObj = appState.stores.find(s => s.code === store);
+                const groupObj = appState.productGroups.find(g => g.code === group);
+                appState.docMeta[key] = {
+                    docNo: generateDocNo(),
+                    store,
+                    storeName: storeObj ? storeObj.name : store,
+                    customerName: storeObj ? storeObj.customerName : '',
+                    group,
+                    groupName: groupObj ? groupObj.name : group,
+                    effFrom,
+                    effTo,
+                    status: 'Active',
+                    createdDate: now.toISOString(),
+                    createdBy: els.currentUser.value || user.name || 'unknown.user',
+                };
+            }
+            appState.docMeta[key].rows = cleanRows;
+            appState.docMeta[key].effFrom = effFrom;
+            appState.docMeta[key].effTo = effTo;
+            appState.docMeta[key].lastUpdated = now.toISOString();
+            appState.docMeta[key].lastUpdatedBy = els.currentUser.value || user.name || 'unknown.user';
+
+            // Simpan ke localStorage
+            const list = JSON.parse(localStorage.getItem('dolfin_forecast_list') || '[]');
+            const idx = list.findIndex(d => d.store === store && d.group === group);
+            if (idx >= 0) {
+                list[idx] = appState.docMeta[key];
+            } else {
+                list.push(appState.docMeta[key]);
+            }
+            localStorage.setItem('dolfin_forecast_list', JSON.stringify(list));
+
+            renderTable();
+            showBanner('Forecast template berhasil disimpan.', 'success');
+        }
+
+        function stripUiFields(row) {
+            const clean = { itemCode: row.itemCode, itemName: row.itemName };
+            dayKeys.forEach(k => clean[k] = Number(row[k] || 0));
+            return clean;
+        }
+
+        function resetPage() {
+            appState.currentRows = [];
+            els.storeSelect.value = '';
+            els.customerName.value = '';
+            els.groupSelect.value = '';
+            els.toggleHideZero.checked = false;
+            renderTable();
+            showBanner('Form berhasil di-reset.', 'info');
+        }
+
+        function copyTemplate() {
+            const targetStore = els.storeSelect.value;
+            const targetGroup = els.groupSelect.value;
+            if (!targetStore || !targetGroup) {
+                showBanner('Pilih Store dan Product Group tujuan terlebih dahulu.', 'error');
+                return;
+            }
+
+            const sourceStore = prompt('Copy dari Store Code mana? Contoh: STR001');
+            if (!sourceStore) return;
+
+            const sourceKey = makeTemplateKey(sourceStore, targetGroup);
+            const sourceTemplate = appState.templates[sourceKey];
+            if (!sourceTemplate) {
+                showBanner('Template sumber tidak ditemukan untuk product group yang sama.', 'error');
+                return;
+            }
+
+            appState.currentRows = JSON.parse(JSON.stringify(sourceTemplate));
+            appState.currentRows.forEach(r => r.__changed = true);
+            renderTable();
+            showBanner(`Template berhasil dicopy dari ${sourceStore}.`, 'success');
+        }
+
+        function isAllZeroRow(row) {
+            return dayKeys.every(key => Number(row[key] || 0) === 0);
+        }
+
+        function formatDateTime(value) {
+            const dt = new Date(value);
+            if (Number.isNaN(dt.getTime())) return '-';
+            return dt.toLocaleString('id-ID', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+
+        function showBanner(message, type = 'info') {
+            els.banner.className = `banner show ${type}`;
+            els.banner.textContent = message;
+            clearTimeout(showBanner._timer);
+            showBanner._timer = setTimeout(() => {
+                els.banner.className = 'banner';
+                els.banner.textContent = '';
+            }, 3000);
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Distributor | Billing Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #222;
+        }
+
+        .page {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .subtext {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 0;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .btn-collapse {
+            background: #eff4ff;
+            color: #1d4ed8;
+            border: 1px solid #c7d2fe;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 14px 16px;
+            font-weight: 700;
+            border-bottom: 1px solid #eef0f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            height: 38px;
+            border: 1px solid #d5dae3;
+            border-radius: 8px;
+            padding: 0 11px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        .field input[readonly],
+        td input[readonly] {
+            background: #f9fafc;
+            color: #374151;
+        }
+
+        .action-row {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .summary-strip {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .summary-box {
+            border: 1px solid #e8ebf1;
+            border-radius: 10px;
+            padding: 12px;
+            background: #fafbfe;
+        }
+
+        .summary-box .label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .summary-box .value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .summary-box .subvalue {
+            margin-top: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #9a3412;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 9px 14px;
+            border-radius: 8px;
+            border: 1px solid #d5dae3;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #374151;
+        }
+
+        .tab-btn.active {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .panel-note {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 250px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 1800px;
+        }
+
+        .date-group-start {
+            border-left: 2px solid #d5dae3;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #edf0f5;
+            font-size: 13px;
+            text-align: left;
+            vertical-align: top;
+            background: #fff;
+        }
+
+        th {
+            background: #f9fafc;
+            font-size: 12px;
+            color: #555;
+            font-weight: 700;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tfoot th {
+            bottom: 0;
+            top: auto;
+            position: sticky;
+            z-index: 10;
+        }
+
+        tbody tr:hover {
+            background: #fafcff;
+        }
+
+        td input {
+            width: 100%;
+            height: 28px;
+            border: 1px solid #d5dae3;
+            border-radius: 6px;
+            padding: 0 8px;
+            font-size: 12px;
+        }
+
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            background: #fff;
+            z-index: 11;
+        }
+
+        thead .sticky-col,
+        tfoot .sticky-col {
+            background: #f9fafc;
+            z-index: 12;
+        }
+
+        .sticky-col-2 {
+            position: sticky;
+            left: 140px;
+            background: #fff;
+            z-index: 11;
+        }
+
+        thead .sticky-col-2,
+        tfoot .sticky-col-2 {
+            background: #f9fafc;
+            z-index: 12;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .tag-gray {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .footer-right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .date-cell {
+            min-width: 165px;
+        }
+
+        .date-cell-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .date-input-row {
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .date-input-row .mini-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+        }
+
+        .amount-text {
+            white-space: nowrap;
+        }
+
+        .billing-detail-table {
+            table-layout: fixed;
+            min-width: 1800px;
+        }
+
+        .billing-detail-table th,
+        .billing-detail-table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 9px 10px;
+            font-size: 12px;
+        }
+
+        .billing-detail-table .sticky-col {
+            position: static;
+            left: auto;
+            width: 140px;
+            min-width: 140px;
+            max-width: 140px;
+            z-index: auto;
+        }
+
+        .billing-detail-table .sticky-col-2 {
+            position: static;
+            left: auto;
+            width: 200px;
+            min-width: 200px;
+            max-width: 200px;
+            white-space: normal;
+            word-break: break-word;
+            z-index: auto;
+            overflow: visible;
+            text-overflow: clip;
+        }
+
+        .billing-detail-table .metric-col {
+            width: 78px;
+            min-width: 78px;
+            max-width: 78px;
+        }
+
+        .billing-detail-table .price-col {
+            width: 96px;
+            min-width: 96px;
+            max-width: 96px;
+        }
+
+        .billing-detail-table .total-col {
+            width: 96px;
+            min-width: 96px;
+            max-width: 96px;
+        }
+
+        .billing-detail-table .amount-col {
+            width: 130px;
+            min-width: 130px;
+            max-width: 130px;
+        }
+
+        .billing-detail-table thead tr:first-child th {
+            top: 0;
+            z-index: 14;
+        }
+
+        .billing-detail-table thead tr:nth-child(2) th {
+            top: 41px;
+            z-index: 13;
+        }
+
+        .billing-detail-table thead .sticky-col,
+        .billing-detail-table thead .sticky-col-2,
+        .billing-detail-table tfoot .sticky-col,
+        .billing-detail-table tfoot .sticky-col-2 {
+            background: #f9fafc;
+        }
+
+        .billing-summary-table .sticky-col,
+        .billing-summary-table .sticky-col-2 {
+            position: static;
+            left: auto;
+            z-index: auto;
+            background: #fff;
+        }
+
+        .billing-summary-table thead .sticky-col,
+        .billing-summary-table thead .sticky-col-2,
+        .billing-summary-table tfoot .sticky-col,
+        .billing-summary-table tfoot .sticky-col-2 {
+            background: #f9fafc;
+        }
+
+        .alert-box {
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .alert-warning-soft {
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            color: #9a3412;
+        }
+
+        .alert-info-soft {
+            background: #eff6ff;
+            border: 1px solid #93c5fd;
+            color: #1d4ed8;
+        }
+
+        .is-missing-grpo {
+            background: #fff7ed !important;
+            border-color: #fb923c !important;
+            color: #9a3412 !important;
+            font-weight: 700;
+        }
+
+        @media (max-width: 1200px) {
+
+            .grid,
+            .summary-strip {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .topbar,
+            .footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .grid,
+            .summary-strip {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar .btn,
+            .footer .btn,
+            .footer-right {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-success fw-bold"><i class="bi bi-receipt me-2"></i>Billing Management</h4>
+                </div>
+
+                <div class="page shadow-sm"
+                    style="max-width: 100%; border-radius: 12px; background: #fff; padding: 24px;">
+
+                    <!-- Billing Preparation view -->
+                    <div id="section-detail">
+
+                        <div class="page">
+
+                            <div class="topbar">
+                                <div>
+                                    <h1>Billing Preparation</h1>
+                                    <div class="subtext">Used as billing recap from operational source, with GRPO as
+                                        final billed quantity basis.</div>
+                                </div>
+                                <a href="distributor_Billinglist.html" class="btn btn-secondary"
+                                    style="text-decoration:none;">Back to List</a>
+                            </div>
+
+                            <div class="card" id="billingInfoCard">
+                                <div class="card-header">Billing Information</div>
+                                <div class="card-body">
+                                    <div class="grid">
+                                        <div class="field">
+                                            <label>Billing No</label>
+                                            <input type="text" value="AUTO" readonly>
+                                        </div>
+
+                                        <div class="field">
+                                            <label>Billing Date</label>
+                                            <input type="date">
+                                        </div>
+
+                                        <div class="field">
+                                            <label>Customer</label>
+                                            <select id="customerSelect">
+                                                <option value="">-- Select Customer --</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="field">
+                                            <label>Status</label>
+                                            <input type="text" value="Draft" readonly>
+                                        </div>
+
+                                        <div class="field">
+                                            <label>Period From</label>
+                                            <input type="date">
+                                        </div>
+
+                                        <div class="field">
+                                            <label>Period To</label>
+                                            <input type="date">
+                                        </div>
+
+                                        <div class="field">
+                                            <label>Currency</label>
+                                            <input type="text" value="IDR" readonly>
+                                        </div>
+
+                                        <div class="field">
+                                            <label>Linked Price List</label>
+                                            <input type="text" value="Sunrise Bakery PL (Active)" readonly
+                                                style="font-weight: 700; color: #16a34a; background-color: #f0fdf4; border-color: #bbf7d0;">
+                                        </div>
+
+                                        <div class="field">
+                                            <label>GRPO Source</label>
+                                            <select id="grpoSourceSelect">
+                                                <option value="">Auto select from local GRPO</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="field" style="grid-column: span 4;">
+                                            <label>Remarks</label>
+                                            <input type="text" placeholder="Optional notes">
+                                        </div>
+                                    </div>
+
+                                    <div class="action-row">
+                                        <button class="btn btn-primary" id="btnLoadDelivery">Refresh Operational
+                                            Source</button>
+                                    </div>
+
+                                    <div id="billingInfoBanner" class="alert-box alert-info-soft">
+                                        Billing recap mengikuti source operasional yang tersedia, dengan GRPO sebagai
+                                        dasar final billed qty. Jika GRPO belum tersedia, sistem akan memakai qty
+                                        fallback sementara dan dokumen hanya boleh disimpan sebagai draft sampai receipt
+                                        direview.
+                                    </div>
+
+                                    <div id="grpoWarningBanner" class="alert-box alert-warning-soft"
+                                        style="display:none;"></div>
+                                </div>
+                            </div>
+
+                            <div class="card" id="summaryCard">
+                                <div class="card-header">Summary</div>
+                                <div class="card-body">
+                                    <div class="summary-strip">
+                                        <div class="summary-box">
+                                            <div class="label">Customer</div>
+                                            <div class="value" id="summaryCustomer">-</div>
+                                        </div>
+                                        <div class="summary-box">
+                                            <div class="label">Operational Dates</div>
+                                            <div class="value">-</div>
+                                        </div>
+                                        <div class="summary-box">
+                                            <div class="label">Total Qty</div>
+                                            <div class="value">-</div>
+                                            <div class="subvalue"></div>
+                                        </div>
+                                        <div class="summary-box">
+                                            <div class="label">Total Amount</div>
+                                            <div class="value">-</div>
+                                            <div class="subvalue"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card" id="returnImpactCard">
+                                <div class="card-header">
+                                    <span>Return Impact Summary</span>
+                                    <button type="button" class="btn btn-collapse section-toggle"
+                                        data-target="editReturnImpactSummaryBody">Hide</button>
+                                </div>
+                                <div class="card-body" id="editReturnImpactSummaryBody">
+                                    <div class="summary-strip">
+                                        <div class="summary-box">
+                                            <div class="label">Related Return Doc</div>
+                                            <div class="value">-</div>
+                                        </div>
+                                        <div class="summary-box">
+                                            <div class="label">Returned Qty</div>
+                                            <div class="value">-</div>
+                                        </div>
+                                        <div class="summary-box">
+                                            <div class="label">Return Amount</div>
+                                            <div class="value">-</div>
+                                        </div>
+                                        <div class="summary-box">
+                                            <div class="label">Financial Treatment</div>
+                                            <div class="value" style="font-size:15px;">-</div>
+                                            <div class="subvalue"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3" id="creditMemoLinkWrap" style="display:none;">
+                                        <a id="openCreditMemoLink" class="btn btn-sm btn-outline-primary" href="#">Open
+                                            Credit Memo</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Billing Data</span>
+                                    <button class="btn btn-primary" id="btnLoadBillingData" style="display:none;">Load
+                                        Billing Data</button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="billingDataEmpty"
+                                        style="text-align:center; padding: 32px 0; color: #6b7280;">
+                                        <div style="font-size:32px; margin-bottom:8px;">📋</div>
+                                        <div style="font-weight:700; margin-bottom:6px;">Billing data belum dimuat</div>
+                                        <div style="font-size:13px;">Pilih customer dan periode, lalu klik <strong>Load
+                                                Billing Data</strong> atau <strong>Refresh Operational Source</strong>
+                                            untuk memuat data dari local storage.</div>
+                                    </div>
+                                    <div id="billingDataContent" style="display:none;">
+                                        <div class="tabs">
+                                            <button class="tab-btn active"
+                                                onclick="openTab(event, 'summaryTab')">Summary</button>
+                                            <button class="tab-btn"
+                                                onclick="openTab(event, 'detailTab')">Detail</button>
+                                        </div>
+
+                                        <!-- SUMMARY TAB -->
+                                        <div id="summaryTab" class="tab-panel active">
+                                            <div class="panel-note">
+                                                Summary per item for billing reference. Final qty follows GRPO receipt
+                                                data.
+                                            </div>
+
+                                            <div class="table-wrap">
+                                                <table id="detailBillingTable" class="billing-summary-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="sticky-col" style="width:140px;">Item Code</th>
+                                                            <th class="sticky-col-2" style="width:220px;">Item Name</th>
+                                                            <th style="width:120px;">Total Qty</th>
+                                                            <th style="width:140px;">Avg Price</th>
+                                                            <th style="width:160px;">Total Amount</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="sticky-col">BRD-001</td>
+                                                            <td class="sticky-col-2">Butter Croissant</td>
+                                                            <td>65</td>
+                                                            <td>18,000</td>
+                                                            <td>1,170,000</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="sticky-col">BRD-007</td>
+                                                            <td class="sticky-col-2">Chocolate Donut</td>
+                                                            <td>55</td>
+                                                            <td>14,500</td>
+                                                            <td>797,500</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="sticky-col">BRD-010</td>
+                                                            <td class="sticky-col-2">Cheese Danish</td>
+                                                            <td>40</td>
+                                                            <td>21,500</td>
+                                                            <td>860,000</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="sticky-col">BRD-013</td>
+                                                            <td class="sticky-col-2">Soft Burger Bun</td>
+                                                            <td>55</td>
+                                                            <td>9,000</td>
+                                                            <td>495,000</td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th class="sticky-col">Total</th>
+                                                            <th class="sticky-col-2">-</th>
+                                                            <th>215</th>
+                                                            <th>-</th>
+                                                            <th>3,322,500</th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- DETAIL TAB -->
+                                        <div id="detailTab" class="tab-panel">
+                                            <div class="panel-note">
+                                                Row = item code. Tiap tanggal menampilkan Billing Qty (editable) dan
+                                                Price sebagai kolom terpisah.
+                                            </div>
+
+                                            <div class="table-wrap">
+                                                <table class="billing-detail-table">
+                                                    <colgroup>
+                                                        <col class="sticky-col">
+                                                        <col class="sticky-col-2">
+                                                        <col class="metric-col">
+                                                        <col class="price-col">
+                                                        <col class="metric-col">
+                                                        <col class="price-col">
+                                                        <col class="metric-col">
+                                                        <col class="price-col">
+                                                        <col class="total-col">
+                                                        <col class="amount-col">
+                                                    </colgroup>
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="sticky-col" rowspan="2" style="width:140px;">Item
+                                                                Code</th>
+                                                            <th class="sticky-col-2" rowspan="2" style="width:220px;">
+                                                                Item Name</th>
+                                                            <th colspan="2" class="date-group-start"
+                                                                style="text-align:center;">01-Apr</th>
+                                                            <th colspan="2" class="date-group-start"
+                                                                style="text-align:center;">03-Apr</th>
+                                                            <th colspan="2" class="date-group-start"
+                                                                style="text-align:center;">05-Apr</th>
+                                                            <th rowspan="2" style="width:100px;">Total Qty</th>
+                                                            <th rowspan="2" style="width:140px;">Total Amount</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <th class="date-group-start" style="width:100px;">Billing
+                                                                Qty</th>
+                                                            <th style="width:110px;">Price</th>
+                                                            <th class="date-group-start" style="width:100px;">Billing
+                                                                Qty</th>
+                                                            <th style="width:110px;">Price</th>
+                                                            <th class="date-group-start" style="width:100px;">Billing
+                                                                Qty</th>
+                                                            <th style="width:110px;">Price</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <!-- BRD-001 Butter Croissant -->
+                                                        <tr>
+                                                            <td class="sticky-col">BRD-001</td>
+                                                            <td class="sticky-col-2">Butter Croissant</td>
+                                                            <!-- 01-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="20"></td>
+                                                            <td><input type="number" readonly value="18000"></td>
+                                                            <!-- 03-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="14"></td>
+                                                            <td><input type="number" readonly value="18000"></td>
+                                                            <!-- 05-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="28"></td>
+                                                            <td><input type="number" readonly value="18000"></td>
+                                                            <td>62</td>
+                                                            <td class="amount-text">1,116,000</td>
+                                                        </tr>
+                                                        <!-- BRD-007 Chocolate Donut -->
+                                                        <tr>
+                                                            <td class="sticky-col">BRD-007</td>
+                                                            <td class="sticky-col-2">Chocolate Donut</td>
+                                                            <!-- 01-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="10"></td>
+                                                            <td><input type="number" readonly value="14500"></td>
+                                                            <!-- 03-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="20"></td>
+                                                            <td><input type="number" readonly value="14500"></td>
+                                                            <!-- 05-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="24"></td>
+                                                            <td><input type="number" readonly value="14500"></td>
+                                                            <td>54</td>
+                                                            <td class="amount-text">783,000</td>
+                                                        </tr>
+                                                        <!-- BRD-010 Cheese Danish -->
+                                                        <tr>
+                                                            <td class="sticky-col">BRD-010</td>
+                                                            <td class="sticky-col-2">Cheese Danish</td>
+                                                            <!-- 01-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="12"></td>
+                                                            <td><input type="number" readonly value="21500"></td>
+                                                            <!-- 03-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="17"></td>
+                                                            <td><input type="number" readonly value="21500"></td>
+                                                            <!-- 05-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="10"></td>
+                                                            <td><input type="number" readonly value="21500"></td>
+                                                            <td>39</td>
+                                                            <td class="amount-text">838,500</td>
+                                                        </tr>
+                                                        <!-- BRD-013 Soft Burger Bun -->
+                                                        <tr>
+                                                            <td class="sticky-col">BRD-013</td>
+                                                            <td class="sticky-col-2">Soft Burger Bun</td>
+                                                            <!-- 01-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="20"></td>
+                                                            <td><input type="number" readonly value="9000"></td>
+                                                            <!-- 03-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="15"></td>
+                                                            <td><input type="number" readonly value="9000"></td>
+                                                            <!-- 05-Apr -->
+                                                            <td class="date-group-start"><input type="number"
+                                                                    value="19"></td>
+                                                            <td><input type="number" readonly value="9000"></td>
+                                                            <td>54</td>
+                                                            <td class="amount-text">486,000</td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th class="sticky-col">Total</th>
+                                                            <th class="sticky-col-2">-</th>
+                                                            <!-- 01-Apr totals -->
+                                                            <th class="date-group-start">62</th>
+                                                            <th>-</th>
+                                                            <!-- 03-Apr totals -->
+                                                            <th class="date-group-start">66</th>
+                                                            <th>-</th>
+                                                            <!-- 05-Apr totals -->
+                                                            <th class="date-group-start">81</th>
+                                                            <th>-</th>
+                                                            <th>209</th>
+                                                            <th class="amount-text">3,223,500</th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="footer">
+                                            <div>
+                                                <span class="tag tag-gray">Preparation Only</span>
+                                            </div>
+                                            <div class="footer-right">
+                                                <button class="btn btn-secondary" id="btnSaveDraft">Save Draft</button>
+                                                <button class="btn btn-success" id="btnMarkReady">Mark as Ready</button>
+                                            </div>
+                                        </div>
+                                    </div><!-- end billingDataContent -->
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="text-center text-muted small mt-4 mb-2">
+                            © 2026 Dolfin — Distributor Portal
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scripts -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="sidebar.js"></script>
+            <script src="billing_storage.js"></script>
+            <script>
+                // =========================
+                // SESSION GUARD
+                // =========================
+                const sess = localStorage.getItem("dolfin_user");
+                if (!sess) window.location.href = "login.html?role=distributor";
+                const user = JSON.parse(sess);
+
+                document.getElementById("userBtn").textContent = user.name || "User";
+                document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+
+                document.getElementById("btnLogout").addEventListener("click", () => {
+                    localStorage.removeItem("dolfin_user");
+                    window.location.href = "index.html";
+                });
+
+                // =========================
+                // SIDEBAR INJECTION
+                // =========================
+                document.addEventListener("DOMContentLoaded", () => {
+                    const sidebar = new SidebarSystem("distributor", "billing");
+                    sidebar.render();
+
+                    document.querySelectorAll(".section-toggle").forEach(button => {
+                        button.addEventListener("click", () => {
+                            const target = document.getElementById(button.dataset.target);
+                            if (!target) return;
+                            const isHidden = target.style.display === "none";
+                            target.style.display = isHidden ? "" : "none";
+                            button.textContent = isHidden ? "Hide" : "Show";
+                        });
+                    });
+                });
+
+
+                function openTab(evt, tabId) {
+                    const panels = document.querySelectorAll('.tab-panel');
+                    const buttons = document.querySelectorAll('.tab-btn');
+
+                    panels.forEach(panel => panel.classList.remove('active'));
+                    buttons.forEach(btn => btn.classList.remove('active'));
+
+                    document.getElementById(tabId).classList.add('active');
+                    evt.currentTarget.classList.add('active');
+                }
+
+                function parseQty(input) {
+                    const value = Number(input.value);
+                    return Number.isFinite(value) ? value : 0;
+                }
+
+                function syncBillingValidation() {
+                    const table = document.getElementById("detailBillingTable");
+                    const warningBanner = document.getElementById("grpoWarningBanner");
+                    const rows = table ? Array.from(table.querySelectorAll("tbody tr")) : [];
+                    let missingSlots = 0;
+
+                    rows.forEach((row) => {
+                        const inputs = Array.from(row.querySelectorAll("input"));
+                        for (let i = 0; i < inputs.length; i += 4) {
+                            const doInput = inputs[i];
+                            const grpoInput = inputs[i + 1];
+                            const billingInput = inputs[i + 2];
+                            if (!doInput || !grpoInput || !billingInput) continue;
+
+                            const hasGrpo = grpoInput.value !== "" && grpoInput.value !== null;
+                            grpoInput.classList.remove("is-missing-grpo");
+                            billingInput.classList.remove("is-missing-grpo");
+
+                            if (!hasGrpo) {
+                                missingSlots += 1;
+                                grpoInput.classList.add("is-missing-grpo");
+                                billingInput.classList.add("is-missing-grpo");
+                                billingInput.value = doInput.value;
+                                billingInput.title = "GRPO belum dibuat. Billing Qty sementara mengikuti source qty.";
+                                grpoInput.title = "GRPO belum dibuat untuk slot ini.";
+                            } else {
+                                billingInput.value = grpoInput.value;
+                                billingInput.title = "";
+                                grpoInput.title = "";
+                            }
+                        }
+                    });
+
+                    if (missingSlots > 0) {
+                        warningBanner.style.display = "block";
+                        warningBanner.innerHTML = `<strong>Warning:</strong> Terdapat ${missingSlots} slot operasional yang belum memiliki GRPO. Billing Qty sementara diisi dari source qty, tetapi dokumen tidak boleh di-mark ready sebelum GRPO tersedia atau direview manual.`;
+                    } else {
+                        warningBanner.style.display = "none";
+                        warningBanner.textContent = "";
+                    }
+
+                    return missingSlots;
+                }
+
+                document.addEventListener("DOMContentLoaded", () => {
+                    syncBillingValidation();
+
+                    document.getElementById("btnLoadDelivery")?.addEventListener("click", () => {
+                        syncBillingValidation();
+                    });
+
+                    document.getElementById("btnSaveDraft")?.addEventListener("click", () => {
+                        syncBillingValidation();
+                        alert("Billing draft disimpan. Jika masih ada GRPO yang belum dibuat, dokumen tetap dipertahankan sebagai Draft.");
+                    });
+
+                    document.getElementById("btnMarkReady")?.addEventListener("click", () => {
+                        const missingSlots = syncBillingValidation();
+                        if (missingSlots > 0) {
+                            openTab({ currentTarget: document.querySelector('[onclick*=\"detailTab\"]') }, "detailTab");
+                            alert("Billing belum bisa di-mark ready karena masih ada source slot yang belum memiliki GRPO.");
+                            return;
+                        }
+
+                        alert("Billing berhasil ditandai Ready.");
+                    });
+                });
+            </script>
+            <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                    const params = new URLSearchParams(window.location.search);
+                    let currentDoc = BillingStorage.getByNo(params.get("billingNo")) || BillingStorage.createDraftTemplate();
+
+                    const billingInfoCard = document.getElementById("billingInfoCard");
+                    const summaryCard = document.getElementById("summaryCard");
+                    const returnCard = document.getElementById("returnImpactCard");
+                    // Customer is now a <select>, so billingInfoInputs no longer includes it.
+                    // Index map: [0]=BillingNo [1]=BillingDate [2]=Status [3]=PeriodFrom [4]=PeriodTo [5]=Currency [6]=PriceList
+                    const billingInfoInputs = billingInfoCard.querySelectorAll("input");
+                    const customerSelect = document.getElementById("customerSelect");
+                    const summaryValues = summaryCard.querySelectorAll(".summary-box .value");
+                    const summarySubvalues = summaryCard.querySelectorAll(".summary-box .subvalue");
+                    const returnValues = returnCard.querySelectorAll(".summary-box .value");
+                    const returnSubvalues = returnCard.querySelectorAll(".summary-box .subvalue");
+                    const remarksInput = billingInfoCard.querySelector('input[placeholder="Optional notes"]');
+                    const grpoSourceSelect = document.getElementById("grpoSourceSelect");
+
+                    // Populate customer dropdown from DO + GRPO local storage
+                    function populateCustomerSelect(selectedCustomer) {
+                        const customers = BillingStorage.getCustomerList();
+                        customerSelect.innerHTML = '<option value="">-- Select Customer --</option>' +
+                            customers.map(c => `<option value="${c}"${c === selectedCustomer ? " selected" : ""}>${c}</option>`).join("");
+                        // If not found in list but has a value, add it
+                        if (selectedCustomer && !customers.includes(selectedCustomer)) {
+                            customerSelect.innerHTML += `<option value="${selectedCustomer}" selected>${selectedCustomer}</option>`;
+                        }
+                    }
+                    const summaryTable = document.getElementById("detailBillingTable");
+                    const detailTable = document.querySelector(".billing-detail-table");
+                    const statusTag = document.querySelector(".footer .tag-gray");
+                    const billingBanner = document.getElementById("billingInfoBanner");
+                    const warningBanner = document.getElementById("grpoWarningBanner");
+                    const billingDataEmpty = document.getElementById("billingDataEmpty");
+                    const billingDataContent = document.getElementById("billingDataContent");
+                    const btnLoadBillingData = document.getElementById("btnLoadBillingData");
+
+                    function showBillingDataSection() {
+                        billingDataEmpty.style.display = "none";
+                        billingDataContent.style.display = "";
+                        btnLoadBillingData.style.display = "none";
+                    }
+
+                    function replaceButton(id) {
+                        const oldButton = document.getElementById(id);
+                        const newButton = oldButton.cloneNode(true);
+                        oldButton.parentNode.replaceChild(newButton, oldButton);
+                        return newButton;
+                    }
+
+                    const btnLoadDelivery = replaceButton("btnLoadDelivery");
+                    const btnSaveDraft = replaceButton("btnSaveDraft");
+                    const btnMarkReady = replaceButton("btnMarkReady");
+
+                    function refreshLinkedPL(customer, periodFrom) {
+                        const resolved = BillingStorage.resolveLinkedPL(customer, periodFrom);
+                        billingInfoInputs[6].value = resolved || "(No active price list found)";
+                        billingInfoInputs[6].style.color = resolved ? "#16a34a" : "#dc2626";
+                    }
+
+                    function renderHeader(doc) {
+                        billingInfoInputs[0].value = doc.billingNo;
+                        billingInfoInputs[1].value = doc.billingDate;
+                        populateCustomerSelect(doc.customer);
+                        billingInfoInputs[2].value = doc.status;
+                        billingInfoInputs[3].value = doc.periodFrom;
+                        billingInfoInputs[4].value = doc.periodTo;
+                        billingInfoInputs[5].value = doc.currency;
+                        refreshLinkedPL(doc.customer, doc.periodFrom);
+                        remarksInput.value = doc.remarks || "";
+                        statusTag.textContent = doc.status === "Confirmed" ? "Read Only View" : "Preparation Only";
+                        billingBanner.innerHTML = doc.status === "Confirmed"
+                            ? "Billing sudah <strong>Confirmed</strong> dan akan dibaca ulang dari persistence final. Untuk perubahan baru, buat draft billing lain dari operational source recap dan GRPO."
+                            : "Billing draft membaca source operasional yang tersedia, dengan <strong>GRPO sebagai dasar final billed qty</strong>. Saat data GRPO ada di local storage, tombol refresh akan memuat ulang recap dari data receipt nyata.";
+                    }
+
+                    function renderGrpoSourceOptions(doc) {
+                        const allGrpos = BillingStorage.getGrpoList();
+                        const candidates = allGrpos.filter((grpo) => {
+                            const sameCustomer = !doc.customer || (grpo.customer || "") === doc.customer;
+                            const afterFrom = !doc.periodFrom || !grpo.grpoDate || grpo.grpoDate >= doc.periodFrom;
+                            const beforeTo = !doc.periodTo || !grpo.grpoDate || grpo.grpoDate <= doc.periodTo;
+                            return sameCustomer && afterFrom && beforeTo;
+                        });
+
+                        grpoSourceSelect.innerHTML = `<option value="">Auto select from local GRPO</option>` + candidates.map((grpo) => `
+                            <option value="${grpo.grpoNo}">${grpo.grpoNo} - ${grpo.customer || grpo.store || "-"} (${grpo.grpoDate || "-"})</option>
+                        `).join("");
+
+                        if (doc.sourceGrpoNos && doc.sourceGrpoNos.length === 1) {
+                            grpoSourceSelect.value = doc.sourceGrpoNos[0];
+                        }
+                    }
+
+                    function renderSummary(doc) {
+                        const ri = doc.returnImpact;
+                        const netQty = doc.totalQty - (ri.qty || 0);
+                        const netAmount = doc.totalAmount - (ri.amount || 0);
+
+                        summaryValues[0].textContent = doc.customer;
+                        summaryValues[1].textContent = `${doc.deliveryDates || doc.dates.length} Dates`;
+                        summaryValues[2].textContent = BillingStorage.formatNumber(doc.totalQty);
+                        summaryValues[3].textContent = BillingStorage.formatCurrency(doc.totalAmount);
+                        summarySubvalues[0].textContent = ri.qty
+                            ? `Net after return: ${BillingStorage.formatNumber(netQty)} Qty`
+                            : "";
+                        summarySubvalues[1].textContent = ri.amount
+                            ? `Net after return: ${BillingStorage.formatCurrency(netAmount)}`
+                            : "";
+
+                        returnValues[0].textContent = ri.docCount ? BillingStorage.formatNumber(ri.docCount) : "—";
+                        returnValues[1].textContent = ri.qty ? BillingStorage.formatNumber(ri.qty) : "—";
+                        returnValues[2].textContent = ri.amount ? BillingStorage.formatCurrency(ri.amount) : "—";
+                        returnValues[3].textContent = ri.financialTreatment;
+                        returnSubvalues[0].textContent = ri.note;
+
+                        const creditMemoLinkWrap = document.getElementById("creditMemoLinkWrap");
+                        const openCreditMemoLink = document.getElementById("openCreditMemoLink");
+                        if (ri.creditMemoRefs && ri.creditMemoRefs.length) {
+                            creditMemoLinkWrap.style.display = "";
+                            openCreditMemoLink.href = `distributor_CreditMemoView.html?memoNo=${encodeURIComponent(ri.creditMemoRefs[0])}`;
+                            openCreditMemoLink.textContent = `Open Credit Memo ${ri.creditMemoRefs[0]}`;
+                        } else {
+                            creditMemoLinkWrap.style.display = "none";
+                        }
+                    }
+
+                    function renderSummaryTable(doc) {
+                        summaryTable.innerHTML = `
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col" style="width:140px;">Item Code</th>
+                                    <th class="sticky-col-2" style="width:220px;">Item Name</th>
+                                    <th style="width:120px;">Total Qty</th>
+                                    <th style="width:140px;">Avg Price</th>
+                                    <th style="width:160px;">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${doc.summaryRows.map(row => `
+                                    <tr>
+                                        <td class="sticky-col">${row.itemCode}</td>
+                                        <td class="sticky-col-2">${row.itemName}</td>
+                                        <td>${BillingStorage.formatNumber(row.totalQty)}</td>
+                                        <td>${BillingStorage.formatNumber(row.avgPrice)}</td>
+                                        <td>${BillingStorage.formatCurrency(row.totalAmount)}</td>
+                                    </tr>
+                                `).join("")}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="sticky-col">Total</th>
+                                    <th class="sticky-col-2">-</th>
+                                    <th>${BillingStorage.formatNumber(doc.totalQty)}</th>
+                                    <th>-</th>
+                                    <th>${BillingStorage.formatCurrency(doc.totalAmount)}</th>
+                                </tr>
+                            </tfoot>
+                        `;
+                    }
+
+                    function renderDetailTable(doc) {
+                        const colgroup = `
+                            <colgroup>
+                                <col class="sticky-col">
+                                <col class="sticky-col-2">
+                                ${doc.dates.map(() => '<col class="metric-col"><col class="price-col"><col class="amount-col">').join("")}
+                                <col class="total-col">
+                                <col class="amount-col">
+                            </colgroup>
+                        `;
+
+                        const headRow1 = `
+                            <tr>
+                                <th class="sticky-col" rowspan="2" style="width:140px;">Item Code</th>
+                                <th class="sticky-col-2" rowspan="2" style="width:220px;">Item Name</th>
+                                ${doc.dates.map(label => `<th colspan="3" class="date-group-start" style="text-align:center;">${label}</th>`).join("")}
+                                <th rowspan="2" style="width:100px;">Total Qty</th>
+                                <th rowspan="2" style="width:140px;">Total Amount</th>
+                            </tr>
+                        `;
+
+                        const headRow2 = `
+                            <tr>
+                                ${doc.dates.map(() => `
+                                    <th class="date-group-start" style="width:100px;">Billing Qty</th>
+                                    <th style="width:110px;">Price</th>
+                                    <th style="width:130px;">Amount</th>
+                                `).join("")}
+                            </tr>
+                        `;
+
+                        const body = doc.detailRows.map((row, rowIndex) => {
+                            const totalQty = row.slots.reduce((total, slot) => total + Number(slot.billingQty || 0), 0);
+                            const totalAmount = row.slots.reduce((total, slot) => total + Number(slot.billingQty || 0) * Number(slot.price || 0), 0);
+                            return `
+                                <tr>
+                                    <td class="sticky-col">${row.itemCode}</td>
+                                    <td class="sticky-col-2">${row.itemName}</td>
+                                    ${row.slots.map((slot, slotIndex) => {
+                                        const amt = Number(slot.billingQty || 0) * Number(slot.price || 0);
+                                        return `
+                                        <td class="date-group-start"><input type="number" value="${slot.billingQty}" data-row-index="${rowIndex}" data-slot-index="${slotIndex}" class="billing-qty-input"></td>
+                                        <td><input type="number" readonly value="${slot.price}"></td>
+                                        <td class="amount-text">${BillingStorage.formatCurrency(amt)}</td>
+                                        `;
+                                    }).join("")}
+                                    <td>${BillingStorage.formatNumber(totalQty)}</td>
+                                    <td class="amount-text">${BillingStorage.formatCurrency(totalAmount)}</td>
+                                </tr>
+                            `;
+                        }).join("");
+
+                        const totals = doc.dates.map((_, slotIndex) => {
+                            const billingQty = doc.detailRows.reduce((total, row) => total + Number(row.slots[slotIndex]?.billingQty || 0), 0);
+                            const amt = doc.detailRows.reduce((total, row) => total + Number(row.slots[slotIndex]?.billingQty || 0) * Number(row.slots[slotIndex]?.price || 0), 0);
+                            return `
+                                <th class="date-group-start">${BillingStorage.formatNumber(billingQty)}</th>
+                                <th>-</th>
+                                <th class="amount-text">${BillingStorage.formatCurrency(amt)}</th>
+                            `;
+                        }).join("");
+
+                        detailTable.innerHTML = `
+                            ${colgroup}
+                            <thead>${headRow1}${headRow2}</thead>
+                            <tbody>${body}</tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="sticky-col">Total</th>
+                                    <th class="sticky-col-2">-</th>
+                                    ${totals}
+                                    <th>${BillingStorage.formatNumber(doc.totalQty)}</th>
+                                    <th class="amount-text">${BillingStorage.formatCurrency(doc.totalAmount)}</th>
+                                </tr>
+                            </tfoot>
+                        `;
+                    }
+
+                    function serializeDoc() {
+                        const clone = JSON.parse(JSON.stringify(currentDoc));
+                        clone.billingDate = billingInfoInputs[1].value;
+                        clone.customer = customerSelect.value;
+                        clone.periodFrom = billingInfoInputs[3].value;
+                        clone.periodTo = billingInfoInputs[4].value;
+                        clone.remarks = remarksInput.value.trim();
+                        clone.currency = billingInfoInputs[5].value;
+                        clone.priceList = BillingStorage.resolveLinkedPL(clone.customer, clone.periodFrom) || billingInfoInputs[6].value;
+                        clone.preparedBy = user.name || clone.preparedBy;
+
+                        detailTable.querySelectorAll(".billing-qty-input").forEach((input) => {
+                            const rowIndex = Number(input.dataset.rowIndex);
+                            const slotIndex = Number(input.dataset.slotIndex);
+                            clone.detailRows[rowIndex].slots[slotIndex].billingQty = Number(input.value || 0);
+                        });
+
+                        return BillingStorage.applyReturnImpact(BillingStorage.recalcBilling(clone));
+                    }
+
+                    function validateDoc(doc) {
+                        let missingSlots = 0;
+                        doc.detailRows.forEach((row) => {
+                            row.slots.forEach((slot) => {
+                                if (slot.grpoQty === "" || slot.grpoQty === null || slot.grpoQty === undefined) {
+                                    missingSlots += 1;
+                                    slot.billingQty = slot.doQty;
+                                }
+                            });
+                        });
+
+                        if (missingSlots > 0) {
+                            warningBanner.style.display = "block";
+                            warningBanner.innerHTML = `<strong>Warning:</strong> Terdapat ${missingSlots} slot operasional yang belum memiliki GRPO. Billing Qty sementara mengikuti source qty dan dokumen hanya bisa disimpan sebagai Draft.`;
+                        } else {
+                            warningBanner.style.display = "none";
+                            warningBanner.textContent = "";
+                        }
+
+                        return missingSlots;
+                    }
+
+                    function renderSummaryEmpty() {
+                        summaryValues[0].textContent = "-";
+                        summaryValues[1].textContent = "-";
+                        summaryValues[2].textContent = "-";
+                        summaryValues[3].textContent = "-";
+                        if (summarySubvalues[0]) summarySubvalues[0].textContent = "";
+                        if (summarySubvalues[1]) summarySubvalues[1].textContent = "";
+                        returnValues[0].textContent = "—";
+                        returnValues[1].textContent = "—";
+                        returnValues[2].textContent = "—";
+                        returnValues[3].textContent = "-";
+                        if (returnSubvalues[0]) returnSubvalues[0].textContent = "";
+                        const creditMemoLinkWrap = document.getElementById("creditMemoLinkWrap");
+                        if (creditMemoLinkWrap) creditMemoLinkWrap.style.display = "none";
+                    }
+
+                    function renderDoc(doc, revealData = true) {
+                        currentDoc = BillingStorage.applyReturnImpact(BillingStorage.recalcBilling(doc));
+                        renderHeader(currentDoc);
+                        renderGrpoSourceOptions(currentDoc);
+                        if (revealData) {
+                            renderSummary(currentDoc);
+                            renderSummaryTable(currentDoc);
+                            renderDetailTable(currentDoc);
+                            validateDoc(currentDoc);
+                            showBillingDataSection();
+                        } else {
+                            renderSummaryEmpty();
+                        }
+                    }
+
+                    customerSelect.addEventListener("change", () => {
+                        const draftSnapshot = serializeDoc();
+                        renderGrpoSourceOptions(draftSnapshot);
+                        refreshLinkedPL(customerSelect.value, billingInfoInputs[3].value);
+                        summaryValues[0].textContent = customerSelect.value || "-";
+                    });
+
+                    function doLoadDelivery() {
+                        const draftSnapshot = serializeDoc();
+                        const loadedDoc = BillingStorage.buildFromGrpoSource(draftSnapshot, currentDoc, {
+                            grpoNos: grpoSourceSelect.value ? [grpoSourceSelect.value] : []
+                        });
+                        BillingStorage.upsertHistory(loadedDoc, {
+                            time: new Date().toLocaleString("en-GB", { hour12: false }).replace(",", ""),
+                            title: "Operational source loaded",
+                            description: "Billing draft refreshed from GRPO receipt data available in local storage."
+                        });
+                        renderDoc(loadedDoc, true);
+                        alert("Billing recap berhasil dimuat dari operational source yang tersedia di local storage.");
+                    }
+
+                    btnLoadDelivery.addEventListener("click", doLoadDelivery);
+                    btnLoadBillingData.addEventListener("click", doLoadDelivery);
+
+                    btnSaveDraft.addEventListener("click", () => {
+                        const doc = serializeDoc();
+                        doc.status = "Draft";
+                        BillingStorage.upsertHistory(doc, {
+                            time: new Date().toLocaleString("en-GB", { hour12: false }).replace(",", ""),
+                            title: "Draft saved",
+                            description: "Billing draft disimpan ulang dari operational source recap dan GRPO."
+                        });
+                        validateDoc(doc);
+                        currentDoc = BillingStorage.saveBilling(doc);
+                        renderDoc(currentDoc);
+                        history.replaceState({}, "", `distributor_Billing.html?billingNo=${encodeURIComponent(currentDoc.billingNo)}`);
+                        alert("Billing draft berhasil disimpan ke persistence lokal.");
+                    });
+
+                    btnMarkReady.addEventListener("click", () => {
+                        const doc = serializeDoc();
+                        const missingSlots = validateDoc(doc);
+                        if (missingSlots > 0) {
+                            document.querySelector('[onclick*="detailTab"]').click();
+                            alert("Billing belum bisa di-confirm karena masih ada source slot yang belum memiliki GRPO.");
+                            return;
+                        }
+
+                        doc.status = "Confirmed";
+                        BillingStorage.upsertHistory(doc, {
+                            time: new Date().toLocaleString("en-GB", { hour12: false }).replace(",", ""),
+                            title: "Status changed to Confirmed",
+                            description: "Billing confirmed after final operational source dan GRPO reconciliation."
+                        });
+                        currentDoc = BillingStorage.saveBilling(doc);
+                        window.location.href = `distributor_BillingView.html?billingNo=${encodeURIComponent(currentDoc.billingNo)}`;
+                    });
+
+                    if (params.get("billingNo")) {
+                        // Existing billing — render fully
+                        renderDoc(currentDoc, true);
+                    } else {
+                        // New billing — show header only, wait for user to load data
+                        renderDoc(currentDoc, false);
+                        btnLoadBillingData.style.display = "";
+                    }
+                });
+            </script>
+</body>
+
+</html>
